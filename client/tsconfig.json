@@ -1,0 +1,15 @@
+{
+  "extends": "../tsconfig.base",
+  "compilerOptions": {
+    "rootDir": ".",
+    "target": "esnext",
+    "module": "esnext",
+    "noEmit": true,
+    "types": [
+      "@koishijs/client/global",
+    ],
+  },
+  "include": [
+    ".",
+  ],
+}
