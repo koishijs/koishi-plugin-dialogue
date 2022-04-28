@@ -16,7 +16,10 @@ declare module '../utils' {
     interface Argv {
       writer?: string
       nameMap?: Dict<string>
-      /** 用于保存用户权限的键值对，键的范围包括目标问答列表的全体作者以及 -w 参数 */
+      /**
+       * a dict for storing user permissions, whose keys includes
+       * all writers of the target dialogues list plus the -w option
+       */
       authMap?: Dict<number>
     }
 
@@ -31,12 +34,12 @@ export default function apply(ctx: Context, config: Dialogue.Config) {
   const { authority } = config
 
   ctx.command('teach')
-    .option('frozen', '-f  锁定这个问答', { authority: authority.frozen })
-    .option('frozen', '-F, --no-frozen  解锁这个问答', { authority: authority.frozen, value: false })
-    .option('writer', '-w <uid:user>  添加或设置问题的作者')
-    .option('writer', '-W, --anonymous  添加或设置匿名问题', { authority: authority.writer, value: '' })
-    .option('substitute', '-s  由教学者完成问答的执行')
-    .option('substitute', '-S, --no-substitute  由触发者完成问答的执行', { value: false })
+    .option('frozen', '-f', { authority: authority.frozen })
+    .option('frozen', '-F, --no-frozen', { authority: authority.frozen, value: false })
+    .option('writer', '-w <uid:user>')
+    .option('writer', '-W, --anonymous', { authority: authority.writer, value: '' })
+    .option('substitute', '-s')
+    .option('substitute', '-S, --no-substitute', { value: false })
 
   ctx.emit('dialogue/flag', 'frozen')
   ctx.emit('dialogue/flag', 'substitute')
@@ -86,21 +89,26 @@ export default function apply(ctx: Context, config: Dialogue.Config) {
     }
   })
 
-  ctx.on('dialogue/detail', ({ writer, flag }, output, argv) => {
-    if (flag & Dialogue.Flag.frozen) output.push('此问答已锁定。')
+  ctx.on('dialogue/detail', ({ writer, flag }, output, { session, nameMap }) => {
+    if (flag & Dialogue.Flag.frozen) {
+      output.push(session.text('.writer.detail.frozen'))
+    }
     if (writer) {
-      const name = argv.nameMap[writer]
-      output.push(name ? `来源：${name}` : `来源：未知用户`)
+      const name = nameMap[writer] || session.text('.writer.detail.unknown')
+      output.push(session.text('.writer.detail.writer', [name]))
       if (flag & Dialogue.Flag.substitute) {
-        output.push('回答中的指令由教学者代行。')
+        output.push(session.text('.writer.detail.substitute'))
       }
     }
   })
 
-  // 当修改问答时，如果问答的作者不是本人，需要 admin 级权限
-  // 当添加和修改问答时，如果问答本身是代行模式或要将问答设置成代行模式，则需要权限高于问答原作者
-  // 当使用 -w 时需要原作者权限高于目标用户
-  // 锁定的问答需要 frozen 级权限才能修改
+  // 1. when modifying a dialogue, if the operator is not the writer,
+  //    an `admin` authority is required
+  // 2. when adding or modifying a dialogue, if the dialogue is in substitute mode,
+  //    or the operator is to set the dialogue to substitute mode,
+  //    a higher authority than the original writer is required
+  // 3. when using -w, the original writer authority should be higher than the target user
+  // 4. frozen dialogues require `frozen` authority to modify
   ctx.on('dialogue/permit', ({ session, target, options, authMap }, { writer, flag }) => {
     const { substitute, writer: newWriter } = options
     const { id, authority } = session.user
@@ -118,17 +126,23 @@ export default function apply(ctx: Context, config: Dialogue.Config) {
     /* eslint-enable operator-linebreak */
   })
 
-  ctx.on('dialogue/detail-short', ({ flag }, output) => {
-    if (flag & Dialogue.Flag.frozen) output.push('锁定')
-    if (flag & Dialogue.Flag.substitute) output.push('代行')
+  ctx.on('dialogue/detail-short', ({ flag }, output, { session }) => {
+    if (flag & Dialogue.Flag.frozen) {
+      output.push(session.text('.writer.abstract.frozen'))
+    }
+    if (flag & Dialogue.Flag.substitute) {
+      output.push(session.text('.writer.abstract.substitute'))
+    }
   })
 
   ctx.before('dialogue/search', ({ writer }, test) => {
     test.writer = writer
   })
 
-  ctx.before('dialogue/modify', async ({ writer, options }) => {
-    if (options.writer && typeof writer === 'undefined') return '指定的目标用户不存在。'
+  ctx.before('dialogue/modify', async ({ writer, options, session }) => {
+    if (options.writer && typeof writer === 'undefined') {
+      return session.text('.writer.target-not-exist')
+    }
   })
 
   ctx.on('dialogue/modify', ({ writer, session, target }, data) => {
@@ -147,7 +161,7 @@ export default function apply(ctx: Context, config: Dialogue.Config) {
     }
   })
 
-  // 触发代行者模式
+  // trigger substitute mode
   ctx.on('dialogue/before-send', async (state) => {
     const { dialogue, session } = state
     if (dialogue.flag & Dialogue.Flag.substitute && dialogue.writer && session.user.id !== dialogue.writer) {
