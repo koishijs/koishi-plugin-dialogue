@@ -41,23 +41,23 @@ export default function apply(ctx: Context, config: Dialogue.Config) {
   if (!successorTimeout) return
 
   ctx.command('teach')
-    .option('setPred', '< <ids:string>  设置前置问题', { type: RE_DIALOGUES })
-    .option('addPred', '<< <ids:string>  添加前置问题', { type: RE_DIALOGUES })
-    .option('setSucc', '> <ids:string>  设置后继问题', { type: RE_DIALOGUES })
-    .option('addSucc', '>> <ids:string>  添加后继问题', { type: RE_DIALOGUES })
-    .option('createSuccessor', '># <op:text>  创建并添加后继问答')
-    .option('successorTimeout', '-z [time]  设置允许触发后继的时间', { type: isPositiveInteger })
-    .option('context', '-c  允许后继问答被任何人触发')
-    .option('context', '-C  后继问答只能被同一人触发', { value: false })
+    .option('setPred', '< <ids:string>', { type: RE_DIALOGUES })
+    .option('addPred', '<< <ids:string>', { type: RE_DIALOGUES })
+    .option('setSucc', '> <ids:string>', { type: RE_DIALOGUES })
+    .option('addSucc', '>> <ids:string>', { type: RE_DIALOGUES })
+    .option('createSuccessor', '># <op:text>')
+    .option('successorTimeout', '-z [time]', { type: isPositiveInteger })
+    .option('context', '-c')
+    .option('context', '-C', { value: false })
 
   ctx.emit('dialogue/flag', 'context')
 
   ctx.on('dialogue/validate', (argv) => {
-    const { options } = argv
+    const { options, session } = argv
 
     if ('setPred' in options) {
       if ('addPred' in options) {
-        return '选项 --set-pred, --add-pred 不能同时使用。'
+        return session.text('.options-conflict', ['--set-pred, --add-pred'])
       } else {
         argv.predecessors = split(options.setPred)
         argv.predOverwrite = true
@@ -69,7 +69,7 @@ export default function apply(ctx: Context, config: Dialogue.Config) {
 
     if ('setSucc' in options) {
       if ('addSucc' in options) {
-        return '选项 --set-succ, --add-succ 不能同时使用。'
+        return session.text('.options-conflict', ['--set-succ, --add-succ'])
       } else {
         argv.successors = split(options.setSucc)
         argv.succOverwrite = true
@@ -137,7 +137,7 @@ export default function apply(ctx: Context, config: Dialogue.Config) {
   ctx.on('dialogue/after-modify', async ({ options: { createSuccessor }, dialogues, session }) => {
     // 当存在 ># 时自动添加新问答并将当前处理的问答作为其前置
     if (!createSuccessor) return
-    if (!dialogues.length) return session.send('没有搜索到任何问答。')
+    if (!dialogues.length) return session.send(session.text('.flowgraph.not-found'))
     const command = ctx.command('teach')
     const argv = { ...command.parse(createSuccessor), session, command }
     const target = argv.options['setPred'] = dialogues.map(d => d.id).join(',')
@@ -166,26 +166,28 @@ export default function apply(ctx: Context, config: Dialogue.Config) {
 
   ctx.on('dialogue/detail', async (dialogue, output, argv) => {
     if (dialogue.flag & Dialogue.Flag.context) {
-      output.push('后继问答可以被上下文内任何人触发')
+      output.push(argv.session.text('.flowgraph.detail.context-mode'))
     }
     if ((dialogue.successorTimeout || successorTimeout) !== successorTimeout) {
-      output.push(`可触发后继时间：${dialogue.successorTimeout / 1000} 秒`)
+      output.push(argv.session.text('.flowgraph.detail.timeout', dialogue))
     }
     if (dialogue._predecessors.length) {
-      output.push('前置问答：', ...formatQuestionAnswers(argv, dialogue._predecessors))
+      output.push(argv.session.text('.flowgraph.detail.predecessors'), ...formatQuestionAnswers(argv, dialogue._predecessors))
     }
     if (dialogue._successors.length) {
-      output.push('后继问答：', ...formatQuestionAnswers(argv, dialogue._successors))
+      output.push(argv.session.text('.flowgraph.detail.successors'), ...formatQuestionAnswers(argv, dialogue._successors))
     }
   })
 
-  ctx.on('dialogue/detail-short', (dialogue, output) => {
+  ctx.on('dialogue/detail-short', (dialogue, output, { session }) => {
     if ((dialogue.successorTimeout || successorTimeout) !== successorTimeout) {
       output.push(`z=${dialogue.successorTimeout / 1000}`)
     }
-    if (dialogue.predecessors.length) output.push('存在前置')
+    if (dialogue.predecessors.length) {
+      output.push(session.text('.flowgraph.abstract.has-pred'))
+    }
     if (dialogue.flag & Dialogue.Flag.context) {
-      output.push('上下文后置')
+      output.push(session.text('.flowgraph.abstract.context-mode'))
     }
   })
 

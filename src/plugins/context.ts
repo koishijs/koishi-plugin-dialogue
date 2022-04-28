@@ -34,13 +34,13 @@ export default function apply(ctx: Context, config: Dialogue.Config) {
     .option('global', '-G')
     .before(({ options, session }) => {
       if (options.disable && options.enable) {
-        return session.text('.context.modifier-conflict', ['-d, -e'])
+        return session.text('.options-conflict', ['-d, -e'])
       } else if (options.disableGlobal && options.enableGlobal) {
-        return session.text('.context.modifier-conflict', ['-D, -E'])
+        return session.text('.options-conflict', ['-D, -E'])
       } else if (options.disableGlobal && options.disable) {
-        return session.text('.context.modifier-conflict', ['-D, -d'])
+        return session.text('.options-conflict', ['-D, -d'])
       } else if (options.enable && options.enableGlobal) {
-        return session.text('.context.modifier-conflict', ['-E, -e'])
+        return session.text('.options-conflict', ['-E, -e'])
       }
 
       let noContextOptions = false

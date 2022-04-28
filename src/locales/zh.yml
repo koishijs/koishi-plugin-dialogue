@@ -31,7 +31,23 @@ commands:
       guilds: 设置具体的生效环境
       global: 无视上下文搜索
 
+      # probability
+      probabilityStrict: 设置问题的触发权重
+      probabilityAppellative: 设置被称呼时问题的触发权重
+
+      # flowgraph
+      setPred: 设置前置问题
+      addPred: 添加前置问题
+      setSucc: 设置后置问题
+      addSucc: 添加后置问题
+      createSuccessor: 创建并添加后继问答
+      successorTimeout: 设置允许触发后继的时间
+      context: 允许后继问答被任何人触发
+      context.false: 后继问答只能被同一人触发
+
     messages:
+      options-conflict: 选项 {0} 不能同时使用。
+
       search:
         empty: 没有搜索到任何问答。
 
@@ -41,7 +57,6 @@ commands:
         remove: 删除
 
       context:
-        modifier-conflict: 选项 {0} 不能同时使用。
         modifier-expected: 选项 -g, --guilds 必须与 -d/-D/-e/-E 之一同时使用。
         private-context: 非群聊上下文中请使用 -E/-D 进行操作或指定 -g, --guilds 选项。
         enable-all: 生效环境：全局
@@ -52,6 +67,20 @@ commands:
         disable-except-some: 生效环境：{0} 个群
         disable-except-current-only: 生效环境：仅本群
         disable-except-current-and-more: 生效环境：本群等 {0} 个群
+
+      probability:
+        detail: 触发权重：p={probS}, P={probA}
+
+      flowgraph:
+        not-found: 没有搜索到任何问答。
+        detail:
+          context-mode: 后继问答可以被上下文内任何人触发
+          timeout: 可触发后继时间：{successorTimeout | time}
+          predecessors: 前置问答：
+          successors: 后继问答：
+        abstract:
+          has-pred: 存在前置
+          context-mode: 上下文后置
 
   dialogue:
     description: 触发教学对话

@@ -13,7 +13,7 @@ import update from './update'
 import context from './plugins/context'
 import internal from './plugins/internal'
 import probability from './plugins/probability'
-import successor from './plugins/successor'
+import flowgraph from './plugins/flowgraph'
 import throttle from './plugins/throttle'
 import time from './plugins/time'
 import writer from './plugins/writer'
@@ -25,7 +25,7 @@ export * from './update'
 export * from './plugins/context'
 export * from './plugins/throttle'
 export * from './plugins/probability'
-export * from './plugins/successor'
+export * from './plugins/flowgraph'
 export * from './plugins/time'
 export * from './plugins/writer'
 
@@ -88,7 +88,7 @@ export function apply(ctx: Context, config: Config) {
   ctx.plugin(context, config)
   ctx.plugin(internal, config)
   ctx.plugin(probability, config)
-  ctx.plugin(successor, config)
+  ctx.plugin(flowgraph, config)
   ctx.plugin(throttle, config)
   ctx.plugin(time, config)
   ctx.plugin(writer, config)

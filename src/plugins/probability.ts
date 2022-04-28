@@ -18,8 +18,8 @@ export default function probability(ctx: Context, config: Dialogue.Config) {
   const { appellationTimeout = 20000 } = config
 
   ctx.command('teach')
-    .option('probabilityStrict', '-p <prob>  设置问题的触发权重', { type: isZeroToOne })
-    .option('probabilityAppellative', '-P <prob>  设置被称呼时问题的触发权重', { type: isZeroToOne })
+    .option('probabilityStrict', '-p <prob>', { type: isZeroToOne })
+    .option('probabilityAppellative', '-P <prob>', { type: isZeroToOne })
 
   ctx.on('dialogue/modify', ({ options }, data) => {
     if (options.create) {
@@ -78,8 +78,9 @@ export default function probability(ctx: Context, config: Dialogue.Config) {
     }, appellationTimeout)
   })
 
-  ctx.on('dialogue/detail', ({ probS, probA }, output) => {
-    if (probS < 1 || probA > 0) output.push(`触发权重：p=${probS}, P=${probA}`)
+  ctx.on('dialogue/detail', (dialogue, output, { session }) => {
+    const { probS, probA } = dialogue
+    if (probS < 1 || probA > 0) output.push(session.text('.probability.detail', dialogue))
   })
 
   ctx.on('dialogue/detail-short', ({ probS, probA }, output) => {
