@@ -41,9 +41,9 @@ export default function apply(ctx: Context) {
   })
 
   ctx.command('teach')
-    .option('search', '', { notUsage: true })
+    .option('search', { notUsage: true })
     .option('page', '/ <page>', { type: isPositiveInteger })
-    .option('autoMerge', '')
+    .option('autoMerge')
     .option('recursive', '-R', { value: false })
     .option('pipe', '| <op:text>')
 

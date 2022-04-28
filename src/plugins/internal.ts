@@ -24,10 +24,10 @@ template.set('teach', {
 
 export default function apply(ctx: Context, config: Dialogue.Config) {
   ctx.command('teach')
-    .option('ignoreHint', '-I  忽略智能提示')
-    .option('regexp', '-x  使用正则表达式匹配', { authority: config.authority.regExp })
-    .option('regexp', '-X  取消使用正则表达式匹配', { value: false })
-    .option('redirect', '=> <answer:string>  重定向到其他问答')
+    .option('ignoreHint', '-I')
+    .option('regexp', '-x', { authority: config.authority.regExp })
+    .option('regexp', '-X', { value: false })
+    .option('redirect', '=> <answer:string>')
     .before(({ options, args }) => {
       function parseArgument() {
         if (!args.length) return ''

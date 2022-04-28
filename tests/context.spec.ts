@@ -10,7 +10,7 @@ describe('Teach Plugin - Context', () => {
     await u3.shouldReply('# foo bar', '非群聊上下文中请使用 -E/-D 进行操作或指定 -g, --guilds 选项。')
     await u3.shouldReply('# foo bar -g 100', '选项 -g, --guilds 必须与 -d/-D/-e/-E 之一同时使用。')
     await u3.shouldReply('# foo bar -eg 100', '问答已添加，编号为 1。')
-    await u3g1.shouldReply('#1', DETAIL_HEAD + '生效环境：本群')
+    await u3g1.shouldReply('#1', DETAIL_HEAD + '生效环境：仅本群')
     await u3g1.shouldReply('## foo -G', SEARCH_HEAD + '1. [e] bar')
   })
 
@@ -59,7 +59,7 @@ describe('Teach Plugin - Context', () => {
 
   it('limited guild enabled (with current guild only)', async () => {
     await u3g1.shouldReply('#1 -De', '问答 1 已成功修改。')
-    await u3g1.shouldReply('#1', DETAIL_HEAD + '生效环境：本群')
+    await u3g1.shouldReply('#1', DETAIL_HEAD + '生效环境：仅本群')
     await u3g1.shouldReply('## foo -G', SEARCH_HEAD + '1. [e] bar')
   })
 
