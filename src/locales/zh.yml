@@ -55,6 +55,15 @@ commands:
 
     messages:
       options-conflict: 选项 {0} 不能同时使用。
+      too-many-arguments: 存在多余的参数，请检查指令语法或将含有空格或换行的问答置于一对引号内。
+      missing-question-or-answer: 缺少问题或回答，请检查指令语法。
+      prohibited-command: 禁止在教学回答中插值调用 {0} 指令。
+      prohibited-cq-code: 问题必须是纯文本。
+      illegal-regexp: 问题含有错误的或不支持的正则表达式语法。
+      probably-modify-answer: 推测你想修改的是回答而不是问题。发送空行或句号以修改回答，使用 -I 选项以忽略本提示。
+      probably-regexp: 推测你想{0}的问题是正则表达式。发送空行或句号以添加 -x 选项，使用 -I 选项以忽略本提示。
+      upload-failed: 上传资源时发生错误。
+      redirections: 重定向到：
 
       search:
         empty: 没有搜索到任何问答。

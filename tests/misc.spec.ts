@@ -60,7 +60,7 @@ describe('Teach Plugin - Miscellaneous', () => {
       logger.level = Logger.ERROR
       upload.mockRejectedValue('failed')
       await u3g1.shouldReply('#1 fooo', '问答 1 已成功修改。')
-      await u3g1.shouldReply('#1 ~ [CQ:image,file=bar,url=baz]', '上传图片时发生错误。')
+      await u3g1.shouldReply('#1 ~ [CQ:image,file=bar,url=baz]', '上传资源时发生错误。')
       logger.level = Logger.WARN
     })
   })

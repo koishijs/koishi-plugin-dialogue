@@ -1,4 +1,4 @@
-import { Context, defineProperty, Query, segment, template } from 'koishi'
+import { Context, defineProperty, Query, segment } from 'koishi'
 import { Dialogue } from '../utils'
 import { create, update } from '../update'
 import { formatQuestionAnswers } from '../search'
@@ -12,23 +12,13 @@ declare module 'koishi' {
   }
 }
 
-template.set('teach', {
-  'too-many-arguments': '存在多余的参数，请检查指令语法或将含有空格或换行的问答置于一对引号内。',
-  'missing-question-or-answer': '缺少问题或回答，请检查指令语法。',
-  'prohibited-command': '禁止在教学回答中插值调用 {0} 指令。',
-  'prohibited-cq-code': '问题必须是纯文本。',
-  'illegal-regexp': '问题含有错误的或不支持的正则表达式语法。',
-  'probably-modify-answer': '推测你想修改的是回答而不是问题。发送空行或句号以修改回答，使用 -I 选项以忽略本提示。',
-  'probably-regexp': '推测你想{0}的问题是正则表达式。发送空行或句号以添加 -x 选项，使用 -I 选项以忽略本提示。',
-})
-
 export default function apply(ctx: Context, config: Dialogue.Config) {
   ctx.command('teach')
     .option('ignoreHint', '-I')
     .option('regexp', '-x', { authority: config.authority.regExp })
     .option('regexp', '-X', { value: false })
     .option('redirect', '=> <answer:string>')
-    .before(({ options, args }) => {
+    .before(({ options, args, session }) => {
       function parseArgument() {
         if (!args.length) return ''
         const [arg] = args.splice(0, 1)
@@ -39,9 +29,9 @@ export default function apply(ctx: Context, config: Dialogue.Config) {
       const question = parseArgument()
       const answer = options.redirect ? `$(dialogue ${options.redirect})` : parseArgument()
       if (args.length) {
-        return template('teach.too-many-arguments')
+        return session.text('.too-many-arguments')
       } else if (/\[CQ:(?!face)/.test(question)) {
-        return template('teach.prohibited-cq-code')
+        return session.text('.prohibited-cq-code')
       }
       const { original, parsed, appellative } = options.regexp
         ? { original: segment.unescape(question), parsed: question, appellative: false }
@@ -84,7 +74,7 @@ export default function apply(ctx: Context, config: Dialogue.Config) {
         args[0] = ''
         return applySuggestion(argv)
       })
-      return template('teach.probably-modify-answer')
+      return session.text('.probably-modify-answer')
     }
 
     // 如果问题疑似正则表达式但原问答不是正则匹配，提示添加 -x 选项
@@ -96,7 +86,8 @@ export default function apply(ctx: Context, config: Dialogue.Config) {
         options.regexp = true
         return applySuggestion(argv)
       })
-      return template('teach.probably-regexp', target ? '修改' : '添加')
+      const operation = session.text('.operation', [target ? 'modify' : 'create'])
+      return session.text('.probably-regexp', [operation])
     }
 
     // 检测正则表达式的合法性
@@ -105,15 +96,15 @@ export default function apply(ctx: Context, config: Dialogue.Config) {
       try {
         questions.forEach(q => new RegExp(q))
       } catch (error) {
-        return template('teach.illegal-regexp')
+        return session.text('.illegal-regexp')
       }
     }
   })
 
-  ctx.before('dialogue/modify', async ({ options, target, args }) => {
+  ctx.before('dialogue/modify', async ({ options, target, args, session }) => {
     // 添加问答时缺少问题或回答
     if (options.create && !target && !(args[0] && args[1])) {
-      return template('teach.missing-question-or-answer')
+      return session.text('.missing-question-or-answer')
     }
   })
 
@@ -135,7 +126,7 @@ export default function apply(ctx: Context, config: Dialogue.Config) {
 
   ctx.on('dialogue/detail', async (dialogue, output, argv) => {
     if (dialogue._redirections?.length) {
-      output.push('重定向到：', ...formatQuestionAnswers(argv, dialogue._redirections))
+      output.push(argv.session.text('.redirections'), ...formatQuestionAnswers(argv, dialogue._redirections))
     }
   })
 
@@ -161,17 +152,17 @@ export default function apply(ctx: Context, config: Dialogue.Config) {
 
   ctx.before('command/execute', ({ command, session }) => {
     if (command.config.noInterp && session._redirected) {
-      return template('teach.prohibited-command', command.name)
+      return session.text('.prohibited-command', [command.name])
     }
   })
 
-  ctx.before('dialogue/modify', async ({ args }) => {
+  ctx.before('dialogue/modify', async ({ args, session }) => {
     if (!args[1] || !ctx.assets) return
     try {
       args[1] = await ctx.assets.transform(args[1])
     } catch (error) {
       ctx.logger('teach').warn(error.message)
-      return '上传图片时发生错误。'
+      return session.text('.upload-failed')
     }
   })
 
