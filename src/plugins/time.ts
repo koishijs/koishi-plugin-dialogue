@@ -20,19 +20,19 @@ declare module '../utils' {
 }
 
 export function isHours(value: string) {
-  if (!/^\d+(:\d+)?$/.test(value)) throw new Error('请输入正确的时间。')
+  if (!/^\d+(:\d+)?$/.test(value)) throw new Error('commands.teach.messages.time.invalid-input')
   const [_hours, _minutes = '0'] = value.split(':')
   const hours = +_hours, minutes = +_minutes
   if (hours >= 0 && hours < 24 && minutes >= 0 && minutes < 60) return value
-  throw new Error('请输入正确的时间。')
+  throw new Error('commands.teach.messages.time.invalid-input')
 }
 
 export default function apply(ctx: Context, config: Dialogue.Config) {
   if (config.useTime === false) return
 
   ctx.command('teach')
-    .option('startTime', '-t <time>  起始时间', { type: isHours })
-    .option('endTime', '-T <time>  结束时间', { type: isHours })
+    .option('startTime', '-t <time>', { type: isHours })
+    .option('endTime', '-T <time>', { type: isHours })
 
   function parseTime(source: string) {
     const [hours, minutes = '0'] = source.split(':')
@@ -69,9 +69,9 @@ export default function apply(ctx: Context, config: Dialogue.Config) {
     return `${hours}:${minutes.toString().padStart(2, '0')}`
   }
 
-  ctx.on('dialogue/detail', (dialogue, output) => {
+  ctx.on('dialogue/detail', (dialogue, output, { session }) => {
     if (dialogue.startTime === dialogue.endTime) return
-    output.push(`触发时段：${formatTime(dialogue.startTime)}-${formatTime(dialogue.endTime)}`)
+    output.push(`${session.text('.time.detail')}${formatTime(dialogue.startTime)}-${formatTime(dialogue.endTime)}`)
   })
 
   ctx.on('dialogue/detail-short', (dialogue, output) => {

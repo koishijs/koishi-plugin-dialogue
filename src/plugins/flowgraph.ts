@@ -104,7 +104,7 @@ export default function apply(ctx: Context, config: Dialogue.Config) {
   })
 
   ctx.on('dialogue/after-modify', async (argv) => {
-    // 修改后置问答
+    // modify successors
     const { succOverwrite, successors, dialogues } = argv
     if (!successors) return
     const predecessors = dialogues.map(dialogue => '' + dialogue.id)
@@ -135,7 +135,7 @@ export default function apply(ctx: Context, config: Dialogue.Config) {
   })
 
   ctx.on('dialogue/after-modify', async ({ options: { createSuccessor }, dialogues, session }) => {
-    // 当存在 ># 时自动添加新问答并将当前处理的问答作为其前置
+    // create a new dialogue with > # and set the current dialogue as its predecessor
     if (!createSuccessor) return
     if (!dialogues.length) return session.send(session.text('.flowgraph.not-found'))
     const command = ctx.command('teach')
@@ -238,12 +238,12 @@ export default function apply(ctx: Context, config: Dialogue.Config) {
 
   ctx.on('dialogue/prepare', ({ dialogues, isSearch }) => {
     if (isSearch) {
-      // 搜索模式下，存在前置的问答不计权重
+      // dialogues with predecessors are not shown in search result
       for (const dialogue of dialogues) {
         if (dialogue.predecessors.length) dialogue._weight = 0
       }
     } else if (dialogues.some(d => d.predecessors.length)) {
-      // 正常情况下，如果已有存在前置的问答，则优先触发
+      // dialogues with predecessors are preferred
       for (const dialogue of dialogues) {
         if (!dialogue.predecessors.length) dialogue._weight = 0
       }

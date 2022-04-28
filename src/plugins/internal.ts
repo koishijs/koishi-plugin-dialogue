@@ -64,7 +64,7 @@ export default function apply(ctx: Context, config: Dialogue.Config) {
       return argv.target ? update(argv) : create(argv)
     }
 
-    // 修改问答时发现可能想改回答但是改了问题
+    // the user may want to modify the answer but modified the question
     if (target && !ignoreHint && question && !answer && maybeAnswer(question, dialogues)) {
       const dispose = session.middleware(({ content }, next) => {
         dispose()
@@ -77,7 +77,9 @@ export default function apply(ctx: Context, config: Dialogue.Config) {
       return session.text('.probably-modify-answer')
     }
 
-    // 如果问题疑似正则表达式但原问答不是正则匹配，提示添加 -x 选项
+    // if the question is likely to be a regular expression
+    // but the original dialogue is not in regexp mode
+    // prompt the user to add -x option
     if (question && !regexp && maybeRegExp(question) && !ignoreHint && (!target || !dialogues.every(d => d.flag & Dialogue.Flag.regexp))) {
       const dispose = session.middleware(({ content }, next) => {
         dispose()
@@ -90,7 +92,7 @@ export default function apply(ctx: Context, config: Dialogue.Config) {
       return session.text('.probably-regexp', [operation])
     }
 
-    // 检测正则表达式的合法性
+    // check the syntax of the input regular expression
     if (regexp || regexp !== false && question && dialogues.some(d => d.flag & Dialogue.Flag.regexp)) {
       const questions = question ? [question] : dialogues.map(d => d.question)
       try {
@@ -102,7 +104,7 @@ export default function apply(ctx: Context, config: Dialogue.Config) {
   })
 
   ctx.before('dialogue/modify', async ({ options, target, args, session }) => {
-    // 添加问答时缺少问题或回答
+    // missing question or answer when creating a dialogue
     if (options.create && !target && !(args[0] && args[1])) {
       return session.text('.missing-question-or-answer')
     }
