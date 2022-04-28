@@ -35,9 +35,9 @@ declare module './utils' {
 }
 
 export default function apply(ctx: Context) {
-  ctx.command('teach.status').action(async () => {
-    const { questions, dialogues } = await ctx.teach.stats()
-    return `共收录了 ${questions} 个问题和 ${dialogues} 个回答。`
+  ctx.command('teach.status').action(async ({ session }) => {
+    const stats = await ctx.teach.stats()
+    return session.text('commands.teach.messages.search.stats', stats)
   })
 
   ctx.command('teach')
@@ -57,9 +57,9 @@ export default function apply(ctx: Context) {
     output.push(...formatAnswers(argv, _redirections, prefix + '= '))
   })
 
-  ctx.on('dialogue/detail-short', ({ flag }, output) => {
+  ctx.on('dialogue/detail-short', ({ flag }, output, { session }) => {
     if (flag & Dialogue.Flag.regexp) {
-      output.questionType = '正则'
+      output.questionType = session.text('.search.regexp')
     }
   })
 
@@ -177,29 +177,30 @@ async function showSearch(argv: Dialogue.Argv) {
   }
 
   if (!original && !answer) {
-    if (!dialogues.length) return '没有搜索到任何回答，尝试切换到其他环境。'
-    return sendResult('全部问答如下', formatQuestionAnswers(argv, dialogues))
+    if (!dialogues.length) return sendEmpty('.search.empty-all')
+    return sendResult('.search.result-all', formatQuestionAnswers(argv, dialogues))
   }
 
   if (!options.regexp) {
-    const suffix = options.regexp !== false ? '，请尝试使用正则表达式匹配' : ''
+    const hint = options.regexp !== false ? session.text('.search.regexp-hint') : ''
     if (!original) {
-      if (!dialogues.length) return `没有搜索到回答“${answer}”${suffix}。`
+      if (!dialogues.length) return sendEmpty('.search.empty-answer', hint)
       const output = dialogues.map(d => `${formatPrefix(argv, d)}${d.original}`)
-      return sendResult(`回答“${answer}”的问题如下`, output)
+      return sendResult('.search.result-answer', output)
     } else if (!answer) {
-      if (!dialogues.length) return `没有搜索到问题“${original}”${suffix}。`
+      if (!dialogues.length) return sendEmpty('.search.empty-question', hint)
       const output = formatAnswers(argv, dialogues)
       const state = app.getSessionState(session)
       state.isSearch = true
       state.test = test
       state.dialogues = dialogues
       const total = await getTotalWeight(app, state)
-      return sendResult(`问题“${original}”的回答如下`, output, dialogues.length > 1 ? `实际触发概率：${+Math.min(total, 1).toFixed(3)}` : '')
+      const epilog = dialogues.length > 1 ? session.text('.search.probability') + Math.min(total, 1).toFixed(3) : ''
+      return sendResult('.search.result-question', output, epilog)
     } else {
-      if (!dialogues.length) return `没有搜索到问答“${original}”“${answer}”${suffix}。`
+      if (!dialogues.length) return sendEmpty('.search.empty-dialogue', hint)
       const output = [dialogues.map(d => d.id).join(', ')]
-      return sendResult(`“${original}”“${answer}”匹配的回答如下`, output)
+      return sendResult('.search.result-dialogue', output)
     }
   }
 
@@ -213,35 +214,41 @@ async function showSearch(argv: Dialogue.Argv) {
       if (!idMap[key]) idMap[key] = []
       idMap[key].push(dialogue.id)
     }
+    const type = session.text('.search.' + (question ? 'answer' : 'question'))
     output = Object.keys(idMap).map((key) => {
       const { length } = idMap[key]
       return length <= mergeThreshold
         ? `${key} (#${idMap[key].join(', #')})`
-        : `${key} (共 ${length} 个${question ? '回答' : '问题'})`
+        : `${key} (${session.text('.search.count', [length])}${type})`
     })
   }
 
   if (!original) {
-    if (!dialogues.length) return `没有搜索到含有正则表达式“${answer}”的回答。`
-    return sendResult(`回答正则表达式“${answer}”的搜索结果如下`, output)
+    if (!dialogues.length) return sendEmpty('.search.empty-regexp-answer')
+    return sendResult('.search.result-regexp-answer', output)
   } else if (!answer) {
-    if (!dialogues.length) return `没有搜索到含有正则表达式“${original}”的问题。`
-    return sendResult(`问题正则表达式“${original}”的搜索结果如下`, output)
+    if (!dialogues.length) return sendEmpty('.search.empty-regexp-question')
+    return sendResult('.search.result-regexp-question', output)
   } else {
-    if (!dialogues.length) return `没有搜索到含有正则表达式“${original}”“${answer}”的问答。`
-    return sendResult(`问答正则表达式“${original}”“${answer}”的搜索结果如下`, output)
+    if (!dialogues.length) return sendEmpty('.search.empty-regexp-dialogue')
+    return sendResult('.search.result-regexp-dialogue', output)
   }
 
-  function sendResult(title: string, output: string[], suffix?: string) {
+  function sendEmpty(path: string, hint?: string) {
+    return session.text(path, [original, answer, hint])
+  }
+
+  function sendResult(path: string, output: string[], suffix?: string) {
     if (output.length <= itemsPerPage) {
-      output.unshift(title + '：')
+      output.unshift(session.text(path, [original, answer]))
       if (suffix) output.push(suffix)
     } else {
       const pageCount = Math.ceil(output.length / itemsPerPage)
       output = output.slice((page - 1) * itemsPerPage, page * itemsPerPage)
-      output.unshift(title + `（第 ${page}/${pageCount} 页）：`)
+      const hint = session.text('.search.page-hint', [page, pageCount])
+      output.unshift(session.text(path, [original, answer, hint]))
       if (suffix) output.push(suffix)
-      output.push('可以使用 /+页码 以调整输出的条目页数。')
+      output.push(session.text('.search.page-footer'))
     }
     return output.join('\n')
   }

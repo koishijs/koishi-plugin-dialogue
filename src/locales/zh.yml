@@ -70,7 +70,30 @@ commands:
       redirections: 重定向到：
 
       search:
+        question: 问题
+        answer: 回答
+        count: 共 {0} 个
         empty: 没有搜索到任何问答。
+        stats: 共收录了 {questions} 个问题和 {dialogues} 个回答。
+        regexp: 正则
+        regexp-hint: ，请尝试使用正则表达式匹配
+        probability: 实际触发概率：
+        result-all: 全部问答如下{2}：
+        result-answer: 回答“{1}”的问题如下{2}：
+        result-question: 问题“{0}”的回答如下{2}：
+        result-dialogue: “{0}”“{1}”匹配的回答如下{2}：
+        result-regexp-answer: 回答正则表达式“{1}”的搜索结果如下{2}：
+        result-regexp-question: 问题正则表达式“{0}”的搜索结果如下{2}：
+        result-regexp-dialogue: 问答正则表达式“{0}”“{1}”的搜索结果如下{2}：
+        empty-all: 没有搜索到任何回答，尝试切换到其他环境。
+        empty-answer: 没有搜索到回答“{1}”{2}。
+        empty-question: 没有搜索到问题“{0}”{2}。
+        empty-dialogue: 没有搜索到问答“{0}”“{1}”{2}。
+        empty-regexp-answer: 没有搜索到含有正则表达式“{1}”的回答。
+        empty-regexp-question: 没有搜索到含有正则表达式“{0}”的问题。
+        empty-regexp-dialogue: 没有搜索到含有正则表达式“{0}”“{1}”的问答。
+        page-hint: ' (第 {0}/{1} 页)'
+        page-footer: 可以使用 /+页码 以调整输出的条目页数。
 
       operation:
         create: 添加

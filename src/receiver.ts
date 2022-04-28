@@ -327,7 +327,7 @@ export default function receiver(ctx: Context, config: Dialogue.Config) {
     test.appellative = appellative
   })
 
-  // 预判要获取的用户字段
+  // predict the user fields involved
   ctx.before('dialogue/attach-user', ({ dialogues, session }, userFields) => {
     for (const data of dialogues) {
       const { inters } = tokenizer.parseToken(data.answer)
