@@ -1,5 +1,5 @@
 import { Context } from 'koishi'
-import { Dialogue, isZeroToOne } from '../utils'
+import { Dialogue } from '../utils'
 
 declare module '../utils' {
   interface Dialogue {
@@ -12,6 +12,12 @@ declare module '../receiver' {
   interface SessionState {
     activated?: Record<number, number>
   }
+}
+
+export function isZeroToOne(source: string) {
+  const n = +source
+  if (n >= 0 && n <= 1) return n
+  throw new Error('commands.teach.messages.probability.zero-to-one')
 }
 
 export default function probability(ctx: Context, config: Dialogue.Config) {
@@ -43,13 +49,16 @@ export default function probability(ctx: Context, config: Dialogue.Config) {
     const hasNormal = dialogues.some(d => !(d.flag & Dialogue.Flag.regexp))
     dialogues.forEach((dialogue) => {
       if (hasNormal && (dialogue.flag & Dialogue.Flag.regexp)) {
-        // 如果存在普通匹配的问答，则所有正则匹配的问答不会触发
+        // if there is a normal dialogue matched,
+        // all regexp dialogues will be ignored
         dialogue._weight = 0
       } else if (userId in activated) {
-        // 如果已经是激活状态，采用两个概率的最大值
+        // if activated, take the maximum of the two probabilities
         dialogue._weight = Math.max(dialogue.probS, dialogue.probA)
       } else if (!test.appellative || !(dialogue.flag & Dialogue.Flag.regexp)) {
-        // 如果不是正则表达式，或问题不含称呼，则根据是否有称呼决定概率
+        // if the dialogue is not in regexp mode,
+        // or the question is not appellative,
+        // the probability is based on appellation
         dialogue._weight = test.appellative ? dialogue.probA : dialogue.probS
       } else {
         // 对于含有称呼的正则表达式，需要判断正则表达式是否使用了称呼

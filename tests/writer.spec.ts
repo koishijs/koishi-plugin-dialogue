@@ -1,7 +1,7 @@
 import createEnvironment from './environment'
 import * as jest from 'jest-mock'
 
-const DETAIL_HEAD_QES = '编号为 1 的问答信息：\n问题：foo\n'
+const DETAIL_HEAD_QES = '问答 1 的详细信息：\n问题：foo\n'
 const DETAIL_HEAD = DETAIL_HEAD_QES + '回答：bar\n'
 const SEARCH_HEAD = '问题“foo”的回答如下：\n'
 

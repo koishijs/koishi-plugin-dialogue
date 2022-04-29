@@ -68,10 +68,32 @@ commands:
       probably-regexp: 推测你想{0}的问题是正则表达式。发送空行或句号以添加 -x 选项，使用 -I 选项以忽略本提示。
       upload-failed: 上传资源时发生错误。
       redirections: 重定向到：
+      create-success: 问答已添加，编号为 {0}。
+      revert-success: 问答 {0} 已回退完成。
+      remove-success: 问答 {0} 已成功删除。
+      low-permission: 该问答因权限过低无法添加。
+      unknown-error: '{0}问答时遇到错误。'
+      no-history: 没有搜索到满足条件的教学操作。
+      recent-history: 近期执行的教学操作有：
+      max-previews: 一次最多同时预览 {0} 个问答。
+      detail: '{0}：{1}'
+      review: '{0}于：{1 | time}前'
+      detail-header: 问答 {0} 的{1}：
 
-      search:
+      entity:
         question: 问题
         answer: 回答
+        regexp: 正则
+        detail: 详细信息
+        history: 历史版本
+
+      operation:
+        create: 添加
+        modify: 修改
+        remove: 删除
+        revert: 回退
+
+      search:
         count: 共 {0} 个
         empty: 没有搜索到任何问答。
         stats: 共收录了 {questions} 个问题和 {dialogues} 个回答。
@@ -95,11 +117,6 @@ commands:
         page-hint: ' (第 {0}/{1} 页)'
         page-footer: 可以使用 /+页码 以调整输出的条目页数。
 
-      operation:
-        create: 添加
-        modify: 修改
-        remove: 删除
-
       context:
         modifier-expected: 选项 -g, --guilds 必须与 -d/-D/-e/-E 之一同时使用。
         private-context: 非群聊上下文中请使用 -E/-D 进行操作或指定 -g, --guilds 选项。
@@ -114,6 +131,7 @@ commands:
 
       probability:
         detail: 触发权重：p={probS}, P={probA}
+        zero-to-one: 应为不超过 1 的正数。
 
       flowgraph:
         not-found: 没有搜索到任何问答。

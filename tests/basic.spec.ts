@@ -97,7 +97,7 @@ describe('Teach Plugin - Appellative', () => {
     await u3g1.shouldReply('satori, foo?', 'bar')
     // TODO support at-trigger
     // await u3g1.shouldReply(`[CQ:at,id=${app.selfId}] foo`, 'bar')
-    await u3g1.shouldReply('#1', '编号为 1 的问答信息：\n问题：koishi,foo\n回答：bar\n触发权重：p=0, P=1')
+    await u3g1.shouldReply('#1', '问答 1 的详细信息：\n问题：koishi,foo\n回答：bar\n触发权重：p=0, P=1')
     await u3g1.shouldReply('## foo', '问题“foo”的回答如下：\n1. [p=0, P=1] bar')
   })
 

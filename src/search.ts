@@ -1,8 +1,8 @@
-import { Dialogue, DialogueTest, isPositiveInteger } from './utils'
+import { Dialogue, DialogueTest } from './utils'
 import { Context, Dict } from 'koishi'
 import { getTotalWeight } from './receiver'
 
-export interface SearchDetails extends Array<string> {
+export interface Abstract extends Array<string> {
   questionType?: string
   answerType?: string
 }
@@ -10,7 +10,7 @@ export interface SearchDetails extends Array<string> {
 declare module 'koishi' {
   interface EventMap {
     'dialogue/list'(dialogue: Dialogue, output: string[], prefix: string, argv: Dialogue.Argv): void
-    'dialogue/detail-short'(dialogue: Dialogue, output: SearchDetails, argv: Dialogue.Argv): void
+    'dialogue/detail-short'(dialogue: Dialogue, output: Abstract, argv: Dialogue.Argv): void
     'dialogue/before-search'(argv: Dialogue.Argv, test: DialogueTest): void | boolean
     'dialogue/search'(argv: Dialogue.Argv, test: DialogueTest, dialogue: Dialogue[]): Promise<void>
   }
@@ -42,7 +42,7 @@ export default function apply(ctx: Context) {
 
   ctx.command('teach')
     .option('search', { notUsage: true })
-    .option('page', '/ <page>', { type: isPositiveInteger })
+    .option('page', '/ <page:posint>')
     .option('autoMerge')
     .option('recursive', '-R', { value: false })
     .option('pipe', '| <op:text>')
@@ -57,9 +57,9 @@ export default function apply(ctx: Context) {
     output.push(...formatAnswers(argv, _redirections, prefix + '= '))
   })
 
-  ctx.on('dialogue/detail-short', ({ flag }, output, { session }) => {
+  ctx.on('dialogue/detail-short', ({ flag }, output) => {
     if (flag & Dialogue.Flag.regexp) {
-      output.questionType = session.text('.search.regexp')
+      output.questionType = 'regexp'
     }
   })
 
@@ -116,21 +116,25 @@ export function formatAnswer(source: string, { maxAnswerLength = 100 }: Dialogue
   return source
 }
 
-export function getDetails(argv: Dialogue.Argv, dialogue: Dialogue) {
-  const details: SearchDetails = []
-  argv.app.emit('dialogue/detail-short', dialogue, details, argv)
-  return details
+export function getAbstract(argv: Dialogue.Argv, dialogue: Dialogue) {
+  const abstract: Abstract = []
+  argv.app.emit('dialogue/detail-short', dialogue, abstract, argv)
+  return abstract
 }
 
-export function formatDetails(dialogue: Dialogue, details: SearchDetails) {
-  return `${dialogue.id}. ${details.length ? `[${details.join(', ')}] ` : ''}`
+export function formatAbstract(dialogue: Dialogue, abstract: Abstract) {
+  return `${dialogue.id}. ${abstract.length ? `[${abstract.join(', ')}] ` : ''}`
 }
 
 function formatPrefix(argv: Dialogue.Argv, dialogue: Dialogue, showAnswerType = false) {
-  const details = getDetails(argv, dialogue)
-  let result = formatDetails(dialogue, details)
-  if (details.questionType) result += `[${details.questionType}] `
-  if (showAnswerType && details.answerType) result += `[${details.answerType}] `
+  const details = getAbstract(argv, dialogue)
+  let result = formatAbstract(dialogue, details)
+  if (details.questionType) {
+    result += `[${argv.session.text('.entity.' + details.questionType)}] `
+  }
+  if (showAnswerType && details.answerType) {
+    result += `[${argv.session.text('.entity.' + details.answerType)}] `
+  }
   return result
 }
 
@@ -143,12 +147,21 @@ export function formatAnswers(argv: Dialogue.Argv, dialogues: Dialogue[], prefix
   })
 }
 
+export function formatDialogue(argv: Dialogue.Argv, dialogue: Dialogue) {
+  const abstract = getAbstract(argv, dialogue)
+  const { original, answer } = dialogue
+  const comma = argv.session.text('general.comma')
+  const questionType = argv.session.text(`.entity.${abstract.questionType || 'question'}`)
+  const answerType = argv.session.text(`.entity.${abstract.answerType || 'answer'}`)
+  return [
+    argv.session.text('.detail', [formatAbstract(dialogue, abstract) + questionType, original]),
+    argv.session.text('.detail', [answerType, formatAnswer(answer, argv.config)]),
+  ].join(comma)
+}
+
 export function formatQuestionAnswers(argv: Dialogue.Argv, dialogues: Dialogue[], prefix = '') {
   return dialogues.map((dialogue) => {
-    const details = getDetails(argv, dialogue)
-    const { questionType = '问题', answerType = '回答' } = details
-    const { original, answer } = dialogue
-    const output = [`${prefix}${formatDetails(dialogue, details)}${questionType}：${original}，${answerType}：${formatAnswer(answer, argv.config)}`]
+    const output = [prefix + formatDialogue(argv, dialogue)]
     argv.app.emit('dialogue/list', dialogue, output, prefix, argv)
     return output.join('\n')
   })
@@ -214,7 +227,7 @@ async function showSearch(argv: Dialogue.Argv) {
       if (!idMap[key]) idMap[key] = []
       idMap[key].push(dialogue.id)
     }
-    const type = session.text('.search.' + (question ? 'answer' : 'question'))
+    const type = session.text('.entity.' + (question ? 'answer' : 'question'))
     output = Object.keys(idMap).map((key) => {
       const { length } = idMap[key]
       return length <= mergeThreshold

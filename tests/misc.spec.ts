@@ -4,7 +4,7 @@ import { install } from '@sinonjs/fake-timers'
 import * as teach from '../src'
 import * as jest from 'jest-mock'
 
-const DETAIL_HEAD = '编号为 1 的问答信息：\n问题：foo\n回答：bar\n'
+const DETAIL_HEAD = '问答 1 的详细信息：\n问题：foo\n回答：bar\n'
 const SEARCH_HEAD = '问题“foo”的回答如下：\n'
 
 describe('Teach Plugin - Miscellaneous', () => {

@@ -1,6 +1,6 @@
-import { Awaitable, Context, deduplicate, difference, pick, sleep, Time } from 'koishi'
-import { Dialogue, isPositiveInteger, prepareTargets, RE_DIALOGUES, split } from './utils'
-import { formatAnswer, formatDetails, formatQuestionAnswers, getDetails } from './search'
+import { Awaitable, Context, deduplicate, difference, isInteger, pick, sleep, Time } from 'koishi'
+import { Dialogue, prepareTargets, RE_DIALOGUES, split } from './utils'
+import { formatDialogue, formatQuestionAnswers } from './search'
 
 declare module 'koishi' {
   interface EventMap {
@@ -39,7 +39,8 @@ export default function apply(ctx: Context) {
       return update(argv)
     } catch (err) {
       ctx.logger('teach').warn(err)
-      return `${revert ? '回退' : remove ? '删除' : '修改'}问答时出现问题。`
+      const operation = argv.session.text(`.operation.${revert ? 'revert' : remove ? 'remove' : 'modify'}`)
+      return argv.session.text('.unknown-error', [operation])
     }
   })
 
@@ -60,7 +61,7 @@ export default function apply(ctx: Context) {
       return true
     })
 
-    if (!dialogues.length) return '没有搜索到满足条件的教学操作。'
+    if (!dialogues.length) return session.text('.no-history')
     return options.review ? review(dialogues, argv) : revert(dialogues, argv)
   }, true)
 
@@ -75,15 +76,15 @@ export default function apply(ctx: Context) {
     }
   })
 
-  ctx.on('dialogue/detail', ({ original, answer, flag, _type, _timestamp }, output, { app, session }) => {
-    if (flag & Dialogue.Flag.regexp) {
-      output.push(`正则：${original}`)
-    } else {
-      output.push(`问题：${original}`)
-    }
-    output.push(`回答：${answer}`)
+  ctx.on('dialogue/detail', ({ original, answer, flag, _type, _timestamp }, output, { session }) => {
+    const entity = session.text(`.entity.${flag & Dialogue.Flag.regexp ? 'regexp' : 'question'}`)
+    output.push(session.text('.detail', [entity, original]))
+    output.push(session.text('.detail', [session.text('.entity.answer'), answer]))
     if (_type) {
-      output.push(`${session.text(`.operation.${_type}`)}于：${app.i18n.render('{0 | time}', [Date.now() - _timestamp], 'zh')}前`)
+      output.push(session.text('.review', [
+        session.text(`.operation.${_type}`),
+        Date.now() - _timestamp,
+      ]))
     }
   })
 }
@@ -91,8 +92,8 @@ export default function apply(ctx: Context) {
 function isIntegerOrInterval(source: string) {
   const n = +source
   if (n * 0 === 0) {
-    isPositiveInteger(source)
-    return source
+    if (isInteger(n) && n > 0) return n
+    throw new Error()
   } else {
     if (Time.parseTime(source)) return source
     throw new Error()
@@ -100,13 +101,10 @@ function isIntegerOrInterval(source: string) {
 }
 
 function review(dialogues: Dialogue[], argv: Dialogue.Argv) {
-  const output = dialogues.map((d) => {
-    const details = getDetails(argv, d)
-    const { questionType = '问题', answerType = '回答' } = details
-    const { original, answer } = d
-    return `${formatDetails(d, details)}${questionType}：${original}，${answerType}：${formatAnswer(answer, argv.config)}`
+  const output = dialogues.map((dialogue) => {
+    return formatDialogue(argv, dialogue)
   })
-  output.unshift('近期执行的教学操作有：')
+  output.unshift(argv.session.text('.recent-history'))
   return output.join('\n')
 }
 
@@ -115,7 +113,7 @@ async function revert(dialogues: Dialogue[], argv: Dialogue.Argv) {
     return await argv.app.teach.revert(dialogues, argv)
   } catch (err) {
     argv.app.logger('teach').warn(err)
-    return '回退问答中出现问题。'
+    return argv.session.text('.unknown-error', [argv.session.text('.operation.revert')])
   }
 }
 
@@ -126,7 +124,7 @@ export async function update(argv: Dialogue.Argv) {
 
   options.modify = !review && !search && (Object.keys(options).length || args.length)
   if (!options.modify && !search && target.length > maxPreviews) {
-    return `一次最多同时预览 ${maxPreviews} 个问答。`
+    return session.text('.max-previews', [maxPreviews])
   }
 
   argv.uneditable = []
@@ -150,7 +148,8 @@ export async function update(argv: Dialogue.Argv) {
       await session.send(`${review ? '最近无人修改过' : '没有搜索到'}编号为 ${argv.unknown.join(', ')} 的问答。`)
     }
     for (let index = 0; index < dialogues.length; index++) {
-      const output = [`编号为 ${dialogues[index].id} 的${review ? '历史版本' : '问答信息'}：`]
+      const type = argv.session.text(`.entity.${review ? 'history' : 'detail'}`)
+      const output = [argv.session.text('.detail-header', [dialogues[index].id, type])]
       await app.serial('dialogue/detail', dialogues[index], output, argv)
       if (index) await sleep(previewDelay)
       await session.send(output.join('\n'))
@@ -169,7 +168,7 @@ export async function update(argv: Dialogue.Argv) {
     let message = ''
     if (targets.length) {
       const editable = await argv.app.teach.remove(targets, argv)
-      message = `问答 ${editable.join(', ')} 已成功删除。`
+      message = argv.session.text('.remove-success', [editable.join(', ')])
     }
     await app.serial('dialogue/after-modify', argv)
     return sendResult(argv, message)
@@ -209,7 +208,7 @@ export async function create(argv: Dialogue.Argv) {
       let message = ''
       if (targets.length) {
         const editable = await argv.app.teach.remove(targets, argv)
-        message = `问答 ${editable.join(', ')} 已成功删除。`
+        message = argv.session.text('.remove-success', [editable.join(', ')])
       }
       await app.serial('dialogue/after-modify', argv)
       return sendResult(argv, message)
@@ -224,7 +223,7 @@ export async function create(argv: Dialogue.Argv) {
 
   const dialogue = { flag: 0 } as Dialogue
   if (app.bail('dialogue/permit', argv, dialogue)) {
-    return '该问答因权限过低无法添加。'
+    return argv.session.text('.low-permission')
   }
 
   try {
@@ -234,9 +233,9 @@ export async function create(argv: Dialogue.Argv) {
     argv.dialogues = [created]
 
     await app.serial('dialogue/after-modify', argv)
-    return sendResult(argv, `问答已添加，编号为 ${argv.dialogues[0].id}。`)
+    return sendResult(argv, argv.session.text('.create-success', [argv.dialogues[0].id]))
   } catch (err) {
-    await argv.session.send('添加问答时遇到错误。')
+    await argv.session.send(argv.session.text('.unknown-error', [argv.session.text('.operation.create')]))
     throw err
   }
 }

@@ -97,7 +97,7 @@ export default class Teach extends Service {
     const edited = dialogues.filter(d => d._type !== 'create')
     await this.remove(created, argv, true)
     await this.recover(edited, argv)
-    return `问答 ${dialogues.map(d => d.id).sort((a, b) => a - b)} 已回退完成。`
+    return argv.session.text('.revert-success', [dialogues.map(d => d.id).sort((a, b) => a - b).join(', ')])
   }
 
   async recover(dialogues: Dialogue[], argv: Dialogue.Argv) {

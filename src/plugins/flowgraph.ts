@@ -1,5 +1,5 @@
 import { contain, Context, Dict, difference, Query, union } from 'koishi'
-import { Dialogue, equal, isPositiveInteger, prepareTargets, RE_DIALOGUES, split } from '../utils'
+import { Dialogue, equal, prepareTargets, RE_DIALOGUES, split } from '../utils'
 import { formatQuestionAnswers } from '../search'
 
 declare module '../receiver' {
@@ -46,7 +46,7 @@ export default function apply(ctx: Context, config: Dialogue.Config) {
     .option('setSucc', '> <ids:string>', { type: RE_DIALOGUES })
     .option('addSucc', '>> <ids:string>', { type: RE_DIALOGUES })
     .option('createSuccessor', '># <op:text>')
-    .option('successorTimeout', '-z [time]', { type: isPositiveInteger })
+    .option('successorTimeout', '-z [time:posint]')
     .option('context', '-c')
     .option('context', '-C', { value: false })
 

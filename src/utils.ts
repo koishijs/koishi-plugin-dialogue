@@ -1,4 +1,4 @@
-import { App, difference, isInteger, observe, Query, Session } from 'koishi'
+import { App, difference, observe, Query, Session } from 'koishi'
 
 declare module 'koishi' {
   interface EventMap {
@@ -101,18 +101,6 @@ export function prepareTargets(argv: Dialogue.Argv, dialogues = argv.dialogues) 
   })
   argv.uneditable.unshift(...difference(dialogues, targets).map(d => d.id))
   return targets.map(data => observe(data, `dialogue ${data.id}`))
-}
-
-export function isPositiveInteger(source: string) {
-  const n = +source
-  if (isInteger(n) && n > 0) return n
-  throw new Error('应为正整数。')
-}
-
-export function isZeroToOne(source: string) {
-  const n = +source
-  if (n >= 0 && n <= 1) return n
-  throw new Error('应为不超过 1 的正数。')
 }
 
 export const RE_DIALOGUES = /^\d+(\.\.\d+)?(,\d+(\.\.\d+)?)*$/

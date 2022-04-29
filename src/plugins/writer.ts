@@ -165,16 +165,15 @@ export default function apply(ctx: Context, config: Dialogue.Config) {
   ctx.on('dialogue/before-send', async (state) => {
     const { dialogue, session } = state
     if (dialogue.flag & Dialogue.Flag.substitute && dialogue.writer && session.user.id !== dialogue.writer) {
-      const userFields = new Set<User.Field>(['name', 'flag'])
+      const { platform } = session
+      const userFields = new Set<User.Field>(['name', 'flag', platform as never])
       ctx.app.emit(session, 'dialogue/before-attach-user', state, userFields)
       // do a little trick here
-      const { platform, userId } = session
       session.platform = 'id'
       session.userId = dialogue.writer
-      session.user = null
       await session.observeUser(userFields)
       session.platform = platform
-      session.userId = userId
+      session.userId = session.user[platform]
     }
   })
 
