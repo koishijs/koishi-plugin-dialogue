@@ -61,7 +61,9 @@ export default function apply(ctx: Context, config: Dialogue.Config) {
     const [question, answer] = args
 
     function applySuggestion(argv: Dialogue.Argv) {
-      return argv.target ? update(argv) : create(argv)
+      return argv.session.withScope('commands.teach.messages', () => {
+        return argv.target ? update(argv) : create(argv)
+      })
     }
 
     // the user may want to modify the answer but modified the question

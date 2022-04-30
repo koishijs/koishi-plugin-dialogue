@@ -145,7 +145,7 @@ export async function update(argv: Dialogue.Argv) {
 
   if (!options.modify) {
     if (argv.unknown.length) {
-      await session.send(`${review ? '最近无人修改过' : '没有搜索到'}编号为 ${argv.unknown.join(', ')} 的问答。`)
+      await session.send(session.text(`.${review ? 'revert' : 'modify'}-unknown`, [argv.unknown.join(', ')]))
     }
     for (let index = 0; index < dialogues.length; index++) {
       const type = argv.session.text(`.entity.${review ? 'history' : 'detail'}`)
@@ -241,21 +241,30 @@ export async function create(argv: Dialogue.Argv) {
 }
 
 export function sendResult(argv: Dialogue.Argv, prefix?: string, suffix?: string) {
-  const { options, uneditable, unknown, skipped, updated, target, config } = argv
+  const { session, options, uneditable, unknown, skipped, updated, target, config } = argv
   const { remove, revert, create } = options
   const output = []
   if (prefix) output.push(prefix)
   if (updated.length) {
-    output.push(create ? `修改了已存在的问答，编号为 ${updated.join(', ')}。` : `问答 ${updated.join(', ')} 已成功修改。`)
+    if (create) {
+      output.push(session.text('.create-modified', [updated.join(', ')]))
+    } else {
+      output.push(session.text('.modify-success', [updated.join(', ')]))
+    }
   }
   if (skipped.length) {
-    output.push(create ? `问答已存在，编号为 ${target.join(', ')}，如要修改请尝试使用 ${config.prefix}${skipped.join(',')} 指令。` : `问答 ${skipped.join(', ')} 没有发生改动。`)
+    if (create) {
+      output.push(session.text('.create-unchanged', [target.join(', '), config.prefix + skipped.join(',')]))
+    } else {
+      output.push(session.text('.unchanged', [skipped.join(', ')]))
+    }
   }
   if (uneditable.length) {
-    output.push(`问答 ${uneditable.join(', ')} 因权限过低无法${revert ? '回退' : remove ? '删除' : '修改'}。`)
+    const operation = session.text('.operation.' + (revert ? 'revert' : remove ? 'remove' : 'modify'))
+    output.push(session.text('.permission-denied', [uneditable.join(', '), operation]))
   }
   if (unknown.length) {
-    output.push(`${revert ? '最近无人修改过' : '没有搜索到'}编号为 ${unknown.join(', ')} 的问答。`)
+    output.push(session.text(`.${revert ? 'revert' : 'modify'}-unknown`, [unknown.join(', ')]))
   }
   if (suffix) output.push(suffix)
   return output.join('\n')

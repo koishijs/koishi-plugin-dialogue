@@ -69,8 +69,15 @@ commands:
       upload-failed: 上传资源时发生错误。
       redirections: 重定向到：
       create-success: 问答已添加，编号为 {0}。
-      revert-success: 问答 {0} 已回退完成。
+      modify-success: 问答 {0} 已成功修改。
       remove-success: 问答 {0} 已成功删除。
+      revert-success: 问答 {0} 已回退完成。
+      unchanged: 问答 {0} 没有发生改动。
+      create-modified: 修改了已存在的问答，编号为 {0}。
+      create-unchanged: 问答已存在，编号为 {0}，如要修改请尝试使用 {1} 指令。
+      revert-unknown: 最近无人修改过编号为 {0} 的问答。
+      modify-unknown: 没有搜索到编号为 {0} 的问答。
+      permission-denied: 问答 {0} 因权限过低无法{1}。
       low-permission: 该问答因权限过低无法添加。
       unknown-error: '{0}问答时遇到错误。'
       no-history: 没有搜索到满足条件的教学操作。
