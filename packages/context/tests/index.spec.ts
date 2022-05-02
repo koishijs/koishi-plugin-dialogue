@@ -1,10 +1,13 @@
-import createEnvironment from '.'
+import createEnvironment from 'koishi-plugin-dialogue/tests'
+import * as context from '../src'
 
 const DETAIL_HEAD = '问答 1 的详细信息：\n问题：foo\n回答：bar\n'
 const SEARCH_HEAD = '问题“foo”的回答如下：\n'
 
 describe('Teach Plugin - Context', () => {
-  const { u3, u3g1, u3g2, u2g1 } = createEnvironment({ useContext: true })
+  const { app, u3, u3g1, u3g2, u2g1 } = createEnvironment({})
+
+  app.plugin(context)
 
   it('validate options 1', async () => {
     await u3.shouldReply('# foo bar', '非群聊上下文中请使用 -E/-D 进行操作或指定 -g, --guilds 选项。')

@@ -20,7 +20,6 @@ export default class Teach extends Service {
       flag: 'unsigned(4)',
       probS: { type: 'decimal', precision: 4, scale: 3, initial: 1 },
       probA: { type: 'decimal', precision: 4, scale: 3, initial: 0 },
-      guilds: 'list(255)',
       original: 'string(255)',
       question: 'string(255)',
       answer: 'text',
@@ -44,10 +43,10 @@ export default class Teach extends Service {
       this.ctx.emit('dialogue/test', test, query)
       const dialogues = await this.ctx.database.get('dialogue', query)
       dialogues.forEach(d => defineProperty(d, '_backup', clone(d)))
-      return dialogues.filter((data) => {
+      return dialogues/* .filter((data) => {
         if (!test.guilds || test.partial) return true
         return !(data.flag & Dialogue.Flag.complement) === test.reversed || !equal(test.guilds, data.guilds)
-      })
+      }) */
     }
   }
 

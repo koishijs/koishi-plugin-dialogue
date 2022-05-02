@@ -23,14 +23,6 @@ commands:
       regexp.false: 取消使用正则表达式匹配
       redirect: 重定向到其他问答
 
-      # context
-      disable: 在当前环境下禁用问答
-      disableGlobal: 在所有环境下禁用问答
-      enable: 在当前环境下启用问答
-      enableGlobal: 在所有环境下启用问答
-      guilds: 设置具体的生效环境
-      global: 无视上下文搜索
-
       # probability
       probabilityStrict: 设置问题的触发权重
       probabilityAppellative: 设置被称呼时问题的触发权重
@@ -119,18 +111,6 @@ commands:
         empty-regexp-dialogue: 没有搜索到含有正则表达式“{0}”“{1}”的问答。
         page-hint: ' (第 {0}/{1} 页)'
         page-footer: 可以使用 /+页码 以调整输出的条目页数。
-
-      context:
-        modifier-expected: 选项 -g, --guilds 必须与 -d/-D/-e/-E 之一同时使用。
-        private-context: 非群聊上下文中请使用 -E/-D 进行操作或指定 -g, --guilds 选项。
-        enable-all: 生效环境：全局
-        enable-except-some: 生效环境：除 {0} 个群外的所有群
-        enable-except-current-only: 生效环境：除本群
-        enable-except-current-and-more: 生效环境：除本群等 {0} 个群外的所有群
-        disable-all: 生效环境：全局禁止
-        disable-except-some: 生效环境：{0} 个群
-        disable-except-current-only: 生效环境：仅本群
-        disable-except-current-and-more: 生效环境：本群等 {0} 个群
 
       probability:
         detail: 触发权重：p={probS}, P={probA}

@@ -1,7 +1,7 @@
 import { Context, defineProperty, difference, union } from 'koishi'
-import { Dialogue, equal } from '../utils'
+import { Dialogue, equal } from 'koishi-plugin-dialogue'
 
-declare module '../utils' {
+declare module 'koishi-plugin-dialogue/lib/utils' {
   interface DialogueTest {
     guilds?: string[]
     reversed?: boolean
@@ -11,19 +11,20 @@ declare module '../utils' {
   interface Dialogue {
     guilds: string[]
   }
-
-  namespace Dialogue {
-    interface Config {
-      useContext?: boolean
-    }
-  }
 }
 
 export const RE_GROUPS = /^\d+(,\d+)*$/
 
-export default function apply(ctx: Context, config: Dialogue.Config) {
-  if (config.useContext === false) return
-  const authority = config.authority.context
+export const name = 'koishi-plugin-dialogue-context'
+
+export function apply(ctx: Context, config: Dialogue.Config) {
+  ctx.i18n.define('zh', require('./locales/zh'))
+
+  ctx.model.extend('dialogue', {
+    guilds: 'list(255)',
+  })
+
+  const authority = ctx.teach.config.authority.context
 
   ctx.command('teach')
     .option('disable', '-d')

@@ -50,14 +50,14 @@ const cheatSheet = (session: Session<'authority'>, config: Dialogue.Config) => {
 　管道语法：　　　|
 　结果页码：　　　/ page
 　禁用递归查询：　-R${authority >= a.regExp ? `
-　正则+合并结果：${p}${l}${l}` : ''}${config.useContext ? `
+　正则+合并结果：${p}${l}${l}` : ''}${/* config.useContext ? `
 上下文选项：
 　允许本群：　　　-e
 　禁止本群：　　　-d` : ''}${config.useContext && authority >= a.context ? `
 　全局允许：　　　-E
 　全局禁止：　　　-D
 　设置群号：　　　-g id
-　无视上下文搜索：-G` : ''}
+　无视上下文搜索：-G` : */''}
 问答选项：${config.useWriter && authority >= a.frozen ? `
 　锁定问答：　　　-f/-F
 　教学者代行：　　-s/-S` : ''}${config.useWriter && authority >= a.writer ? `
