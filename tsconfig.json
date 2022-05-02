@@ -1,5 +1,12 @@
 {
   "extends": "./tsconfig.base",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "koishi-plugin-dialogue": ["packages/core/src"],
+      "koishi-plugin-dialogue-*": ["packages/*/src"],
+    },
+  },
   "references": [
     { "path": "./packages/core" },
   ],
