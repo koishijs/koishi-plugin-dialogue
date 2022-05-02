@@ -1,6 +1,6 @@
 {
-  "name": "koishi-plugin-dialogue-rate-limit",
-  "description": "Rate Limit Support for koishi-plugin-dialogue",
+  "name": "koishi-plugin-dialogue-console",
+  "description": "Console Support for koishi-plugin-dialogue",
   "version": "1.0.0",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
@@ -26,15 +26,19 @@
     "teach",
     "dialogue",
     "conversation",
+    "required:console",
     "required:teach"
   ],
   "peerDependencies": {
+    "@koishijs/plugin-console": "^3.2.9",
+    "@koishijs/plugin-status": "^5.3.6",
     "koishi": "^4.6.2",
     "koishi-plugin-dialogue": "^4.0.0"
   },
   "devDependencies": {
-    "@koishijs/plugin-database-memory": "^1.2.0",
-    "@koishijs/plugin-mock": "^1.0.4",
+    "@koishijs/client": "^3.2.9",
+    "@koishijs/plugin-console": "^3.2.9",
+    "@koishijs/plugin-status": "^5.3.6",
     "koishi": "^4.6.2"
   }
 }

@@ -39,10 +39,7 @@
     "koishi": "^4.6.2"
   },
   "devDependencies": {
-    "@koishijs/client": "^3.2.9",
-    "@koishijs/plugin-console": "^3.2.9",
     "@koishijs/plugin-database-memory": "^1.2.0",
-    "@koishijs/plugin-status": "^5.3.6",
     "@koishijs/plugin-mock": "^1.0.4",
     "@sinonjs/fake-timers": "^6.0.1",
     "@types/sinonjs__fake-timers": "^6.0.4",

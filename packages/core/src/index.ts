@@ -3,7 +3,6 @@ import { Dialogue } from './utils'
 
 // features
 import command from './command'
-import frontend from './frontend'
 import receiver from './receiver'
 import search from './search'
 import service from './service'
@@ -73,7 +72,6 @@ export function apply(ctx: Context, config: Config) {
   ctx.plugin(receiver, config)
   ctx.plugin(search, config)
   ctx.plugin(update, config)
-  ctx.plugin(frontend, config)
 
   // options
   ctx.plugin(context, config)
