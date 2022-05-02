@@ -27,16 +27,6 @@ commands:
       probabilityStrict: 设置问题的触发权重
       probabilityAppellative: 设置被称呼时问题的触发权重
 
-      # flowgraph
-      setPred: 设置前置问题
-      addPred: 添加前置问题
-      setSucc: 设置后置问题
-      addSucc: 添加后置问题
-      createSuccessor: 创建并添加后继问答
-      successorTimeout: 设置允许触发后继的时间
-      context: 允许后继问答被任何人触发
-      context.false: 后继问答只能被同一人触发
-
     messages:
       options-conflict: 选项 {0} 不能同时使用。
       too-many-arguments: 存在多余的参数，请检查指令语法或将含有空格或换行的问答置于一对引号内。
@@ -107,17 +97,6 @@ commands:
       probability:
         detail: 触发权重：p={probS}, P={probA}
         zero-to-one: 应为不超过 1 的正数。
-
-      flowgraph:
-        not-found: 没有搜索到任何问答。
-        detail:
-          context-mode: 后继问答可以被上下文内任何人触发
-          timeout: 可触发后继时间：{successorTimeout | time}
-          predecessors: 前置问答：
-          successors: 后继问答：
-        abstract:
-          has-pred: 存在前置
-          context-mode: 上下文后置
 
   dialogue:
     description: 触发教学对话

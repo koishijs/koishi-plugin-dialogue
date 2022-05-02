@@ -1,14 +1,13 @@
 import { contain, Context, Dict, difference, Query, union } from 'koishi'
-import { Dialogue, equal, prepareTargets, RE_DIALOGUES, split } from '../utils'
-import { formatQuestionAnswers } from '../search'
+import { Dialogue, equal, formatQuestionAnswers, prepareTargets, RE_DIALOGUES, split } from 'koishi-plugin-dialogue'
 
-declare module '../receiver' {
+declare module 'koishi-plugin-dialogue/lib/receiver' {
   interface SessionState {
     predecessors?: Record<number, Record<number, number>>
   }
 }
 
-declare module '../utils' {
+declare module 'koishi-plugin-dialogue/lib/utils' {
   interface DialogueTest {
     stateful?: boolean
     context?: boolean
@@ -36,9 +35,17 @@ declare module '../utils' {
   }
 }
 
-export default function apply(ctx: Context, config: Dialogue.Config) {
+export const name = 'koishi-plugin-dialogue-flow'
+
+export function apply(ctx: Context, config: Dialogue.Config) {
+  ctx.i18n.define('zh', require('./locales/zh'))
+
+  ctx.model.extend('dialogue', {
+    predecessors: 'list(255)',
+    successorTimeout: 'unsigned',
+  })
+
   const { successorTimeout = 20000 } = config
-  if (!successorTimeout) return
 
   ctx.command('teach')
     .option('setPred', '< <ids:string>', { type: RE_DIALOGUES })

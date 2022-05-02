@@ -22,18 +22,19 @@ declare module 'koishi-plugin-dialogue/lib/utils' {
        */
       authMap?: Dict<number>
     }
-
-    interface Config {
-      useWriter?: boolean
-    }
   }
 }
 
 export const name = 'koishi-plugin-dialogue-author'
 
 export function apply(ctx: Context, config: Dialogue.Config) {
-  if (config.useWriter === false) return
   const { authority } = config
+
+  ctx.i18n.define('zh', require('./locales/zh'))
+
+  ctx.model.extend('dialogue', {
+    writer: 'string(255)',
+  })
 
   ctx.command('teach')
     .option('frozen', '-f', { authority: authority.frozen })

@@ -24,7 +24,6 @@ export default function (config: teach.Config) {
 
   app.plugin(teach, {
     historyTimeout: 0,
-    successorTimeout: 0,
     ...config,
   })
 

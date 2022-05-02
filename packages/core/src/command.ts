@@ -70,7 +70,7 @@ const cheatSheet = (session: Session<'authority'>, config: Dialogue.Config) => {
 　严格匹配权重：　-p prob
 　称呼匹配权重：　-P prob${/* config.useTime ? `
 　设置起始时间：　-t time
-　设置结束时间：　-T time` : */''}
+　设置结束时间：　-T time` : */''}${/* config.successorTimeout ? `
 前置与后继：
 　设置前置问题：　< id
 　添加前置问题：　<< id
@@ -78,7 +78,7 @@ const cheatSheet = (session: Session<'authority'>, config: Dialogue.Config) => {
 　添加后继问题：　>> id
 　上下文触发后继：-c/-C
 　前置生效时间：　-z secs
-　创建新问答并作为后继：>#
+　创建新问答并作为后继：>#` : */''}
 回退功能：
 　查看近期改动：　-v
 　回退近期改动：　-V

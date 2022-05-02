@@ -23,9 +23,6 @@ export default class Teach extends Service {
       original: 'string(255)',
       question: 'string(255)',
       answer: 'text',
-      predecessors: 'list(255)',
-      successorTimeout: 'unsigned',
-      writer: 'string(255)',
     }, {
       autoInc: true,
     })
