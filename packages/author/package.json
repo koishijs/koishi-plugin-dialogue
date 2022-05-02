@@ -1,0 +1,41 @@
+{
+  "name": "koishi-plugin-dialogue-author",
+  "description": "Author Support for koishi-plugin-dialogue",
+  "version": "1.0.0",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "files": [
+    "lib"
+  ],
+  "author": "Shigma <shigma10826@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/koishijs/koishi-plugin-dialogue.git",
+    "directory": "packages/core"
+  },
+  "bugs": {
+    "url": "https://github.com/koishijs/koishi-plugin-dialogue/issues"
+  },
+  "homepage": "https://koishi.js.org/community/dialogue/",
+  "keywords": [
+    "bot",
+    "chatbot",
+    "koishi",
+    "plugin",
+    "teach",
+    "dialogue",
+    "conversation",
+    "required:teach"
+  ],
+  "peerDependencies": {
+    "koishi": "^4.6.2",
+    "koishi-plugin-dialogue": "^4.0.0"
+  },
+  "devDependencies": {
+    "@koishijs/plugin-database-memory": "^1.2.0",
+    "@koishijs/plugin-mock": "^1.0.4",
+    "jest-mock": "^27.5.1",
+    "koishi": "^4.6.2"
+  }
+}

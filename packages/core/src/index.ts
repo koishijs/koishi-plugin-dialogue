@@ -14,7 +14,6 @@ import internal from './plugins/internal'
 import probability from './plugins/probability'
 import flowgraph from './plugins/flowgraph'
 import throttle from './plugins/throttle'
-import writer from './plugins/writer'
 
 export * from './command'
 export * from './utils'
@@ -24,7 +23,6 @@ export * from './update'
 export * from './plugins/throttle'
 export * from './plugins/probability'
 export * from './plugins/flowgraph'
-export * from './plugins/writer'
 
 declare module 'koishi' {
   interface EventMap {
@@ -87,5 +85,4 @@ export function apply(ctx: Context, config: Config) {
   ctx.plugin(probability, config)
   ctx.plugin(flowgraph, config)
   ctx.plugin(throttle, config)
-  ctx.plugin(writer, config)
 }

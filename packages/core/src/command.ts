@@ -58,11 +58,11 @@ const cheatSheet = (session: Session<'authority'>, config: Dialogue.Config) => {
 　全局禁止：　　　-D
 　设置群号：　　　-g id
 　无视上下文搜索：-G` : */''}
-问答选项：${config.useWriter && authority >= a.frozen ? `
+问答选项：${/* config.useWriter && authority >= a.frozen ? `
 　锁定问答：　　　-f/-F
 　教学者代行：　　-s/-S` : ''}${config.useWriter && authority >= a.writer ? `
 　设置问题作者：　-w uid
-　设置为匿名：　　-W` : ''}
+　设置为匿名：　　-W` : */''}
 　忽略智能提示：　-I
 　重定向：　　　　=>
 匹配规则：${authority >= a.regExp ? `

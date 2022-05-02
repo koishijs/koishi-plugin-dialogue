@@ -1,0 +1,21 @@
+commands:
+  teach:
+    options:
+      frozen: 锁定这个问答
+      frozen.false: 解锁这个问答
+      writer: 添加或设置问题的作者
+      writer.: 添加或设置匿名问题
+      substitute: 由教学者完成问答的执行
+      substitute.false: 由触发者完成问答的执行
+
+    messages:
+      writer:
+        target-not-exist: 指定的目标用户不存在。
+        detail:
+          writer: 来源：{0}
+          unknown: 未知用户
+          frozen: 此问答已锁定。
+          substitute: 回答中的指令由教学者代行。
+        abstract:
+          frozen: 锁定
+          substitute: 代行

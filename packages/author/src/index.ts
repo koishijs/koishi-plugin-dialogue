@@ -1,7 +1,7 @@
 import { Context, Dict, User } from 'koishi'
-import { Dialogue } from '../utils'
+import { Dialogue } from 'koishi-plugin-dialogue'
 
-declare module '../utils' {
+declare module 'koishi-plugin-dialogue/lib/utils' {
   interface DialogueTest {
     writer?: string
     frozen?: boolean
@@ -29,7 +29,9 @@ declare module '../utils' {
   }
 }
 
-export default function apply(ctx: Context, config: Dialogue.Config) {
+export const name = 'koishi-plugin-dialogue-author'
+
+export function apply(ctx: Context, config: Dialogue.Config) {
   if (config.useWriter === false) return
   const { authority } = config
 

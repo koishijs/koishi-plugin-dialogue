@@ -1,12 +1,15 @@
-import createEnvironment from '.'
+import createEnvironment from 'koishi-plugin-dialogue/tests'
 import * as jest from 'jest-mock'
+import * as author from '../src'
 
 const DETAIL_HEAD_QES = '问答 1 的详细信息：\n问题：foo\n'
 const DETAIL_HEAD = DETAIL_HEAD_QES + '回答：bar\n'
 const SEARCH_HEAD = '问题“foo”的回答如下：\n'
 
 describe('Teach Plugin - Writer', () => {
-  const { app, u2g1, u3g1, u4g2 } = createEnvironment({ useWriter: true })
+  const { app, u2g1, u3g1, u4g2 } = createEnvironment({})
+
+  app.plugin(author)
 
   app.command('test').action(({ session }) => '' + session.userId)
 

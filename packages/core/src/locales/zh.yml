@@ -37,14 +37,6 @@ commands:
       context: 允许后继问答被任何人触发
       context.false: 后继问答只能被同一人触发
 
-      # writer
-      frozen: 锁定这个问答
-      frozen.false: 解锁这个问答
-      writer: 添加或设置问题的作者
-      writer.: 添加或设置匿名问题
-      substitute: 由教学者完成问答的执行
-      substitute.false: 由触发者完成问答的执行
-
     messages:
       options-conflict: 选项 {0} 不能同时使用。
       too-many-arguments: 存在多余的参数，请检查指令语法或将含有空格或换行的问答置于一对引号内。
@@ -126,17 +118,6 @@ commands:
         abstract:
           has-pred: 存在前置
           context-mode: 上下文后置
-
-      writer:
-        target-not-exist: 指定的目标用户不存在。
-        detail:
-          writer: 来源：{0}
-          unknown: 未知用户
-          frozen: 此问答已锁定。
-          substitute: 回答中的指令由教学者代行。
-        abstract:
-          frozen: 锁定
-          substitute: 代行
 
   dialogue:
     description: 触发教学对话
