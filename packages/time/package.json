@@ -1,22 +1,18 @@
 {
-  "name": "koishi-plugin-dialogue",
-  "description": "Dialogue Plugin for Koishi",
-  "version": "4.0.0",
+  "name": "koishi-plugin-dialogue-time",
+  "description": "Time Support for koishi-plugin-dialogue",
+  "version": "1.0.0",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
-  "engines": {
-    "node": ">=12.0.0"
-  },
   "files": [
-    "lib",
-    "dist"
+    "lib"
   ],
   "author": "Shigma <shigma10826@gmail.com>",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/koishijs/koishi-plugin-dialogue.git",
-    "directory": "packages/time"
+    "directory": "packages/core"
   },
   "bugs": {
     "url": "https://github.com/koishijs/koishi-plugin-dialogue/issues"
@@ -30,27 +26,17 @@
     "teach",
     "dialogue",
     "conversation",
-    "required:database",
-    "optional:assets",
-    "optional:console",
-    "impl:teach"
+    "required:teach"
   ],
   "peerDependencies": {
-    "koishi": "^4.6.2"
+    "koishi": "^4.6.2",
+    "koishi-plugin-dialogue": "^4.0.0"
   },
   "devDependencies": {
-    "@koishijs/client": "^3.2.9",
-    "@koishijs/plugin-console": "^3.2.9",
     "@koishijs/plugin-database-memory": "^1.2.0",
-    "@koishijs/plugin-status": "^5.3.6",
     "@koishijs/plugin-mock": "^1.0.4",
     "@sinonjs/fake-timers": "^6.0.1",
     "@types/sinonjs__fake-timers": "^6.0.4",
-    "jest-mock": "^27.5.1",
     "koishi": "^4.6.2"
-  },
-  "dependencies": {
-    "fastest-levenshtein": "^1.0.12",
-    "simplify-chinese": "^1.1.0"
   }
 }

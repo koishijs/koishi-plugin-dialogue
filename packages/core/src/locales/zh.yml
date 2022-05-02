@@ -53,10 +53,6 @@ commands:
       substitute: 由教学者完成问答的执行
       substitute.false: 由触发者完成问答的执行
 
-      # time
-      startTime: 起始时间
-      endTime: 结束时间
-
     messages:
       options-conflict: 选项 {0} 不能同时使用。
       too-many-arguments: 存在多余的参数，请检查指令语法或将含有空格或换行的问答置于一对引号内。
@@ -161,10 +157,6 @@ commands:
         abstract:
           frozen: 锁定
           substitute: 代行
-
-      time:
-        detail: 触发时段：
-        invalid-input: 请输入正确的时间。
 
   dialogue:
     description: 触发教学对话

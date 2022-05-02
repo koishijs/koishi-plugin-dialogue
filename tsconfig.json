@@ -7,7 +7,4 @@
       "koishi-plugin-dialogue-*": ["packages/*/src"],
     },
   },
-  "references": [
-    { "path": "./packages/core" },
-  ],
 }

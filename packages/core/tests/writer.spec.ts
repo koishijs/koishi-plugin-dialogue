@@ -1,4 +1,4 @@
-import createEnvironment from './environment'
+import createEnvironment from '.'
 import * as jest from 'jest-mock'
 
 const DETAIL_HEAD_QES = '问答 1 的详细信息：\n问题：foo\n'

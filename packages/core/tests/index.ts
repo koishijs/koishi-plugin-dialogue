@@ -25,7 +25,6 @@ export default function (config: teach.Config) {
   app.plugin(teach, {
     historyTimeout: 0,
     useContext: false,
-    useTime: false,
     useWriter: false,
     successorTimeout: 0,
     ...config,

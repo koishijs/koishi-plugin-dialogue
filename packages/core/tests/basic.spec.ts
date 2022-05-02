@@ -1,7 +1,7 @@
 import { Random } from 'koishi'
 import { MessageClient } from '@koishijs/plugin-mock'
 import { install, InstalledClock } from '@sinonjs/fake-timers'
-import createEnvironment from './environment'
+import createEnvironment from '.'
 import * as jest from 'jest-mock'
 
 describe('Teach Plugin - Basic Support', () => {

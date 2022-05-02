@@ -20,8 +20,6 @@ export default class Teach extends Service {
       flag: 'unsigned(4)',
       probS: { type: 'decimal', precision: 4, scale: 3, initial: 1 },
       probA: { type: 'decimal', precision: 4, scale: 3, initial: 0 },
-      startTime: 'integer',
-      endTime: 'integer',
       guilds: 'list(255)',
       original: 'string(255)',
       question: 'string(255)',

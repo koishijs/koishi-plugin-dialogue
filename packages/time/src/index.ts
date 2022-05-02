@@ -1,7 +1,7 @@
 import { Context } from 'koishi'
-import { Dialogue } from '../utils'
+import { Dialogue } from 'koishi-plugin-dialogue'
 
-declare module '../utils' {
+declare module 'koishi-plugin-dialogue/lib/utils' {
   interface DialogueTest {
     matchTime?: number
     mismatchTime?: number
@@ -10,12 +10,6 @@ declare module '../utils' {
   interface Dialogue {
     startTime: number
     endTime: number
-  }
-
-  namespace Dialogue {
-    interface Config {
-      useTime?: boolean
-    }
   }
 }
 
@@ -27,8 +21,15 @@ export function isHours(value: string) {
   throw new Error('commands.teach.messages.time.invalid-input')
 }
 
-export default function apply(ctx: Context, config: Dialogue.Config) {
-  if (config.useTime === false) return
+export const name = 'koishi-plugin-dialogue-time'
+
+export function apply(ctx: Context, config: Dialogue.Config) {
+  ctx.i18n.define('zh', require('./locales/zh'))
+
+  ctx.model.extend('dialogue', {
+    startTime: 'integer',
+    endTime: 'integer',
+  })
 
   ctx.command('teach')
     .option('startTime', '-t <time>', { type: isHours })

@@ -68,9 +68,9 @@ const cheatSheet = (session: Session<'authority'>, config: Dialogue.Config) => {
 匹配规则：${authority >= a.regExp ? `
 　正则表达式：　　-x/-X` : ''}
 　严格匹配权重：　-p prob
-　称呼匹配权重：　-P prob${config.useTime ? `
+　称呼匹配权重：　-P prob${/* config.useTime ? `
 　设置起始时间：　-t time
-　设置结束时间：　-T time` : ''}
+　设置结束时间：　-T time` : */''}
 前置与后继：
 　设置前置问题：　< id
 　添加前置问题：　<< id

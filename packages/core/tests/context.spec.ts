@@ -1,4 +1,4 @@
-import createEnvironment from './environment'
+import createEnvironment from '.'
 
 const DETAIL_HEAD = '问答 1 的详细信息：\n问题：foo\n回答：bar\n'
 const SEARCH_HEAD = '问题“foo”的回答如下：\n'
