@@ -1,10 +1,15 @@
 {
-  "extends": "../tsconfig.base",
   "compilerOptions": {
     "rootDir": ".",
     "target": "esnext",
     "module": "esnext",
     "noEmit": true,
+    "composite": true,
+    "incremental": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+    "strictBindCallApply": true,
     "types": [
       "@koishijs/client/global",
     ],

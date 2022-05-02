@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-dialogue",
   "description": "Dialogue Plugin for Koishi",
-  "version": "3.3.0",
+  "version": "4.0.0",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "engines": {
@@ -35,14 +35,15 @@
     "impl:teach"
   ],
   "peerDependencies": {
-    "koishi": "^4.6.1"
+    "koishi": "^4.6.2"
   },
   "devDependencies": {
-    "@koishijs/client": "^3.2.8",
-    "@koishijs/plugin-console": "^3.2.8",
+    "@koishijs/client": "^3.2.9",
+    "@koishijs/plugin-console": "^3.2.9",
     "@koishijs/plugin-database-memory": "^1.2.0",
     "@koishijs/plugin-status": "^5.3.6",
-    "@koishijs/plugin-mock": "^1.0.4"
+    "@koishijs/plugin-mock": "^1.0.4",
+    "koishi": "^4.6.2"
   },
   "dependencies": {
     "fastest-levenshtein": "^1.0.12",
