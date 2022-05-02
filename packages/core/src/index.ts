@@ -12,14 +12,12 @@ import update from './update'
 // options
 import internal from './plugins/internal'
 import probability from './plugins/probability'
-import throttle from './plugins/throttle'
 
 export * from './command'
 export * from './utils'
 export * from './receiver'
 export * from './search'
 export * from './update'
-export * from './plugins/throttle'
 export * from './plugins/probability'
 
 declare module 'koishi' {
@@ -81,5 +79,4 @@ export function apply(ctx: Context, config: Config) {
   ctx.plugin(context, config)
   ctx.plugin(internal, config)
   ctx.plugin(probability, config)
-  ctx.plugin(throttle, config)
 }

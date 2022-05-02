@@ -1,4 +1,4 @@
-import { Random } from 'koishi'
+import { Assets, Logger, Random } from 'koishi'
 import { MessageClient } from '@koishijs/plugin-mock'
 import { install, InstalledClock } from '@sinonjs/fake-timers'
 import createEnvironment from '.'
@@ -177,5 +177,33 @@ describe('Teach Plugin - Interpolate', () => {
     await u3g1.shouldReply('foo', ['end'])
     await u3g1.shouldReply('#1 ~ foo$0', '问答 1 已成功修改。')
     await u3g1.shouldReply('foobar', ['foofoobar'])
+  })
+})
+
+describe('Teach Plugin - Miscellaneous', () => {
+  describe('Assets', () => {
+    const logger = new Logger('teach')
+    const { app, u3g1 } = createEnvironment({})
+    const upload = jest.fn(async (url: string) => url)
+
+    app.plugin(class MockAssets extends Assets {
+      types = ['image']
+      upload = upload
+      stats = async () => ({})
+    })
+
+    it('upload succeed', async () => {
+      upload.mockResolvedValue('https://127.0.0.1/image/baz')
+      await u3g1.shouldReply('# foo [CQ:image,file=baz,url=bar]', '问答已添加，编号为 1。')
+      await u3g1.shouldReply('foo', '[CQ:image,url=https://127.0.0.1/image/baz]')
+    })
+
+    it('upload failed', async () => {
+      logger.level = Logger.ERROR
+      upload.mockRejectedValue('failed')
+      await u3g1.shouldReply('#1 fooo', '问答 1 已成功修改。')
+      await u3g1.shouldReply('#1 ~ [CQ:image,file=bar,url=baz]', '上传资源时发生错误。')
+      logger.level = Logger.WARN
+    })
   })
 })
