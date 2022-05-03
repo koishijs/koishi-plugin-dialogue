@@ -22,3 +22,9 @@ jobs:
         run: yarn
       - name: Build
         run: yarn build
+      - name: Trigger Docs
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: Test
+          repo: koishijs/koishi
+          token: ${{ secrets.WORKFLOW_TOKEN }}
