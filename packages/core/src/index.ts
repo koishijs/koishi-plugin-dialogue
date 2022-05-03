@@ -74,7 +74,6 @@ export function apply(ctx: Context, config: Config) {
   ctx.plugin(update, config)
 
   // options
-  ctx.plugin(context, config)
   ctx.plugin(internal, config)
   ctx.plugin(probability, config)
 }

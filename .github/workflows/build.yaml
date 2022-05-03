@@ -1,11 +1,8 @@
 name: Build
 
 on:
-  - push
-  - pull_request
-
-env:
-  CI: true
+  push:
+  pull_request:
 
 jobs:
   build:
@@ -22,9 +19,15 @@ jobs:
         run: yarn
       - name: Build
         run: yarn build
+
+  docs:
+    if: ${{ github.ref == 'refs/heads/master' }}
+    runs-on: ubuntu-latest
+
+    steps:
       - name: Trigger Docs
         uses: benc-uk/workflow-dispatch@v1
         with:
-          workflow: Test
+          workflow: Build
           repo: koishijs/koishi
           token: ${{ secrets.WORKFLOW_TOKEN }}
