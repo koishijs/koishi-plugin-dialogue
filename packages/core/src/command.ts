@@ -2,11 +2,11 @@
 
 import { Argv, Context, escapeRegExp, Session } from 'koishi'
 import { create } from './update'
-import { Dialogue } from './utils'
+import { Dialogue } from '.'
 import {} from '@koishijs/plugin-console'
 import {} from '@koishijs/plugin-status'
 
-declare module './utils' {
+declare module '.' {
   export namespace Dialogue {
     export interface Config {
       prefix?: string
@@ -20,14 +20,8 @@ export interface AuthorityConfig {
   base?: number
   /** 可修改非自己创建的问答，默认值为 3 */
   admin?: number
-  /** 可修改上下文设置，默认值为 3 */
-  context?: number
-  /** 可修改锁定的问答，默认值为 4 */
-  frozen?: number
   /** 可使用正则表达式，默认值为 3 */
   regExp?: number
-  /** 可设置作者或匿名，默认值为 2 */
-  writer?: number
   /** 可触发教学问答，默认值为 1 */
   receive?: number
 }

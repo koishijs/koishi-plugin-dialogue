@@ -7,7 +7,7 @@ declare module 'koishi-plugin-dialogue/lib/receiver' {
   }
 }
 
-declare module 'koishi-plugin-dialogue/lib/utils' {
+declare module 'koishi-plugin-dialogue' {
   interface DialogueTest {
     stateful?: boolean
     context?: boolean
@@ -115,12 +115,12 @@ export function apply(ctx: Context, config: Dialogue.Config) {
     const { succOverwrite, successors, dialogues } = argv
     if (!successors) return
     const predecessors = dialogues.map(dialogue => '' + dialogue.id)
-    const successorDialogues = await ctx.teach.get(successors)
+    const successorDialogues = await ctx.dialogue.get(successors)
     const newTargets = successorDialogues.map(d => d.id)
     argv.unknown = difference(successors, newTargets)
 
     if (succOverwrite) {
-      for (const dialogue of await ctx.teach.get({ predecessors })) {
+      for (const dialogue of await ctx.dialogue.get({ predecessors })) {
         if (!newTargets.includes(dialogue.id)) {
           newTargets.push(dialogue.id)
           successorDialogues.push(dialogue)
@@ -138,7 +138,7 @@ export function apply(ctx: Context, config: Dialogue.Config) {
       }
     }
 
-    await ctx.teach.update(targets, argv)
+    await ctx.dialogue.update(targets, argv)
   })
 
   ctx.on('dialogue/after-modify', async ({ options: { createSuccessor }, dialogues, session }) => {
@@ -162,7 +162,7 @@ export function apply(ctx: Context, config: Dialogue.Config) {
       }
     }
     const dialogueMap: Dict<Dialogue> = {}
-    for (const dialogue of await ctx.teach.get([...predecessors])) {
+    for (const dialogue of await ctx.dialogue.get([...predecessors])) {
       dialogueMap[dialogue.id] = dialogue
     }
     for (const dialogue of dialogues) {
@@ -208,7 +208,7 @@ export function apply(ctx: Context, config: Dialogue.Config) {
     }).map(d => d.id)
     if (!predecessors.length) return
 
-    const successors = (await ctx.teach.get({
+    const successors = (await ctx.dialogue.get({
       ...test,
       question: undefined,
       answer: undefined,

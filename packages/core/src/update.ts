@@ -1,5 +1,6 @@
 import { Awaitable, Context, deduplicate, difference, isInteger, pick, sleep, Time } from 'koishi'
-import { Dialogue, prepareTargets, RE_DIALOGUES, split } from './utils'
+import { prepareTargets, RE_DIALOGUES, split } from './utils'
+import { Dialogue } from '.'
 import { formatDialogue, formatQuestionAnswers } from './search'
 
 declare module 'koishi' {
@@ -12,7 +13,7 @@ declare module 'koishi' {
   }
 }
 
-declare module './utils' {
+declare module '.' {
   namespace Dialogue {
     interface Config {
       previewDelay?: number
@@ -49,7 +50,7 @@ export default function apply(ctx: Context) {
     const { includeLast, excludeLast } = options
     if (!options.review && !options.revert) return
     const now = Date.now(), includeTime = Time.parseTime(includeLast), excludeTime = Time.parseTime(excludeLast)
-    const dialogues = Object.values(ctx.teach.history).filter((dialogue) => {
+    const dialogues = Object.values(ctx.dialogue.history).filter((dialogue) => {
       if (dialogue._operator !== session.userId) return
       const offset = now - dialogue._timestamp
       if (includeTime && offset >= includeTime) return
@@ -110,7 +111,7 @@ function review(dialogues: Dialogue[], argv: Dialogue.Argv) {
 
 async function revert(dialogues: Dialogue[], argv: Dialogue.Argv) {
   try {
-    return await argv.app.teach.revert(dialogues, argv)
+    return await argv.app.dialogue.revert(dialogues, argv)
   } catch (err) {
     argv.app.logger('teach').warn(err)
     return argv.session.text('.unknown-error', [argv.session.text('.operation.revert')])
@@ -131,8 +132,8 @@ export async function update(argv: Dialogue.Argv) {
   argv.updated = []
   argv.skipped = []
   const dialogues = argv.dialogues = revert || review
-    ? Object.values(pick(app.teach.history, target)).filter(Boolean)
-    : await app.teach.get(target)
+    ? Object.values(pick(app.dialogue.history, target)).filter(Boolean)
+    : await app.dialogue.get(target)
   argv.dialogueMap = Object.fromEntries(dialogues.map(d => [d.id, { ...d }]))
 
   if (search) {
@@ -160,14 +161,14 @@ export async function update(argv: Dialogue.Argv) {
   const targets = prepareTargets(argv)
 
   if (revert) {
-    const message = targets.length ? await argv.app.teach.revert(targets, argv) : ''
+    const message = targets.length ? await argv.app.dialogue.revert(targets, argv) : ''
     return sendResult(argv, message)
   }
 
   if (remove) {
     let message = ''
     if (targets.length) {
-      const editable = await argv.app.teach.remove(targets, argv)
+      const editable = await argv.app.dialogue.remove(targets, argv)
       message = argv.session.text('.remove-success', [editable.join(', ')])
     }
     await app.serial('dialogue/after-modify', argv)
@@ -180,7 +181,7 @@ export async function update(argv: Dialogue.Argv) {
     for (const dialogue of targets) {
       app.emit('dialogue/modify', argv, dialogue)
     }
-    await argv.app.teach.update(targets, argv)
+    await argv.app.dialogue.update(targets, argv)
     await app.serial('dialogue/after-modify', argv)
   }
 
@@ -195,7 +196,7 @@ export async function create(argv: Dialogue.Argv) {
   argv.uneditable = []
   argv.updated = []
   argv.skipped = []
-  argv.dialogues = await app.teach.get({ question, answer, regexp: false })
+  argv.dialogues = await app.dialogue.get({ question, answer, regexp: false })
   await app.serial('dialogue/before-detail', argv)
   const result = await app.serial('dialogue/before-modify', argv)
   if (typeof result === 'string') return result
@@ -207,7 +208,7 @@ export async function create(argv: Dialogue.Argv) {
     if (options.remove) {
       let message = ''
       if (targets.length) {
-        const editable = await argv.app.teach.remove(targets, argv)
+        const editable = await argv.app.dialogue.remove(targets, argv)
         message = argv.session.text('.remove-success', [editable.join(', ')])
       }
       await app.serial('dialogue/after-modify', argv)
@@ -216,7 +217,7 @@ export async function create(argv: Dialogue.Argv) {
     for (const dialogue of targets) {
       app.emit('dialogue/modify', argv, dialogue)
     }
-    await argv.app.teach.update(targets, argv)
+    await argv.app.dialogue.update(targets, argv)
     await app.serial('dialogue/after-modify', argv)
     return sendResult(argv)
   }
@@ -229,7 +230,7 @@ export async function create(argv: Dialogue.Argv) {
   try {
     app.emit('dialogue/modify', argv, dialogue)
     const created = await app.database.create('dialogue', dialogue)
-    argv.app.teach.addHistory(dialogue, 'create', argv, false)
+    argv.app.dialogue.addHistory(dialogue, 'create', argv, false)
     argv.dialogues = [created]
 
     await app.serial('dialogue/after-modify', argv)

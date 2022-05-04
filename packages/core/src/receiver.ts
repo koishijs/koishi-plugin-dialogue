@@ -2,7 +2,7 @@ import {
   Argv, Awaitable, Channel, Context, escapeRegExp, makeArray,
   Next, noop, Random, segment, Session, User,
 } from 'koishi'
-import { Dialogue, DialogueTest } from './utils'
+import { Dialogue, DialogueTest } from '.'
 import { simplify } from 'simplify-chinese'
 
 declare module 'koishi' {
@@ -40,7 +40,7 @@ interface Question {
   activated: boolean
 }
 
-declare module './utils' {
+declare module '.' {
   namespace Dialogue {
     interface Config {
       nickname?: string | string[]
@@ -182,7 +182,7 @@ export async function triggerDialogue(ctx: Context, session: Session, next: Next
   logger.debug('[receive]', session.messageId, session.content)
 
   // fetch matched dialogues
-  const dialogues = state.dialogues = await ctx.teach.get(state.test)
+  const dialogues = state.dialogues = await ctx.dialogue.get(state.test)
 
   // pick dialogue
   let dialogue: Dialogue

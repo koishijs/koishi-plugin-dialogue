@@ -1,14 +1,14 @@
 import { Context } from 'koishi'
-import { Dialogue } from '../utils'
+import { Dialogue } from '.'
 
-declare module '../utils' {
+declare module '.' {
   interface Dialogue {
     probS: number
     probA: number
   }
 }
 
-declare module '../receiver' {
+declare module './receiver' {
   interface SessionState {
     activated?: Record<number, number>
   }

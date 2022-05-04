@@ -1,7 +1,7 @@
-import { Context, defineProperty, difference, union } from 'koishi'
+import { Context, defineProperty, difference, Schema, union } from 'koishi'
 import { Dialogue, equal } from 'koishi-plugin-dialogue'
 
-declare module 'koishi-plugin-dialogue/lib/utils' {
+declare module 'koishi-plugin-dialogue' {
   interface DialogueTest {
     guilds?: string[]
     reversed?: boolean
@@ -15,16 +15,24 @@ declare module 'koishi-plugin-dialogue/lib/utils' {
 
 export const RE_GROUPS = /^\d+(,\d+)*$/
 
+export interface Config {
+  authority?: number
+}
+
+export const Config: Schema<Config> = Schema.object({
+  authority: Schema.number().default(3).description('修改上下文设置的权限等级。'),
+})
+
 export const name = 'koishi-plugin-dialogue-context'
 
-export function apply(ctx: Context, config: Dialogue.Config) {
+export function apply(ctx: Context, config: Config) {
+  const { authority } = config
+
   ctx.i18n.define('zh', require('./locales/zh'))
 
   ctx.model.extend('dialogue', {
     guilds: 'list(255)',
   })
-
-  const authority = ctx.teach.config.authority.context
 
   ctx.command('teach')
     .option('disable', '-d')

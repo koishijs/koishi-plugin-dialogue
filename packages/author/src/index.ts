@@ -1,7 +1,7 @@
-import { Context, Dict, User } from 'koishi'
+import { Context, Dict, Schema, User } from 'koishi'
 import { Dialogue } from 'koishi-plugin-dialogue'
 
-declare module 'koishi-plugin-dialogue/lib/utils' {
+declare module 'koishi-plugin-dialogue' {
   interface DialogueTest {
     writer?: string
     frozen?: boolean
@@ -25,9 +25,23 @@ declare module 'koishi-plugin-dialogue/lib/utils' {
   }
 }
 
+export interface Config {
+  authority?: {
+    frozen?: number
+    writer?: number
+  }
+}
+
+export const Config: Schema<Config> = Schema.object({
+  authority: Schema.object({
+    frozen: Schema.number().default(2).description('设置作者或匿名的权限等级。'),
+    writer: Schema.number().default(4).description('修改锁定状态的权限等级。'),
+  }),
+})
+
 export const name = 'koishi-plugin-dialogue-author'
 
-export function apply(ctx: Context, config: Dialogue.Config) {
+export function apply(ctx: Context, config: Config) {
   const { authority } = config
 
   ctx.i18n.define('zh', require('./locales/zh'))

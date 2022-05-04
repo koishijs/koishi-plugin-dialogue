@@ -1,7 +1,7 @@
-import { Context } from 'koishi'
-import { Dialogue } from 'koishi-plugin-dialogue'
+import { Context, Schema } from 'koishi'
+import {} from 'koishi-plugin-dialogue'
 
-declare module 'koishi-plugin-dialogue/lib/utils' {
+declare module 'koishi-plugin-dialogue' {
   interface DialogueTest {
     matchTime?: number
     mismatchTime?: number
@@ -21,9 +21,13 @@ export function isHours(value: string) {
   throw new Error('commands.teach.messages.time.invalid-input')
 }
 
+export interface Config {}
+
+export const Config: Schema<Config> = Schema.object({})
+
 export const name = 'koishi-plugin-dialogue-time'
 
-export function apply(ctx: Context, config: Dialogue.Config) {
+export function apply(ctx: Context, config: Config) {
   ctx.i18n.define('zh', require('./locales/zh'))
 
   ctx.model.extend('dialogue', {

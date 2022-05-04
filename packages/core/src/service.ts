@@ -1,19 +1,20 @@
-import { $, clone, Context, defineProperty, Observed, pick, Query, Service } from 'koishi'
-import { Dialogue, DialogueTest, equal } from './utils'
+import { $, clone, Context, defineProperty, Observed, Query, Service } from 'koishi'
+// import { Dialogue, DialogueTest, equal } from './utils'
+import { Dialogue, DialogueTest } from '.'
 
 declare module 'koishi' {
   namespace Context {
     interface Services {
-      teach: Teach
+      dialogue: DialogueService
     }
   }
 }
 
-export default class Teach extends Service {
+export default class DialogueService extends Service {
   history: Record<number, Dialogue> = {}
 
   constructor(ctx: Context, public config: Dialogue.Config) {
-    super(ctx, 'teach', true)
+    super(ctx, 'dialogue', true)
 
     ctx.model.extend('dialogue', {
       id: 'unsigned',
@@ -49,19 +50,13 @@ export default class Teach extends Service {
 
   async update(dialogues: Observed<Dialogue>[], argv: Dialogue.Argv) {
     const data: Partial<Dialogue>[] = []
-    const fields = new Set<Dialogue.Field>(['id'])
-    for (const { $diff } of dialogues) {
-      for (const key in $diff) {
-        fields.add(key as Dialogue.Field)
-      }
-    }
     for (const dialogue of dialogues) {
       if (!Object.keys(dialogue.$diff).length) {
         argv.skipped.push(dialogue.id)
       } else {
-        dialogue.$diff = {}
         argv.updated.push(dialogue.id)
-        data.push(pick(dialogue, fields))
+        data.push({ ...dialogue.$diff, id: dialogue.id })
+        dialogue.$diff = {}
         this.addHistory(dialogue._backup, 'modify', argv, false)
       }
     }

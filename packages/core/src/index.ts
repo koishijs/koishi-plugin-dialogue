@@ -1,5 +1,4 @@
-import { Awaitable, Context, Schema, Time } from 'koishi'
-import { Dialogue } from './utils'
+import { App, Awaitable, Context, Query, Schema, Session, Time } from 'koishi'
 
 // features
 import command from './command'
@@ -9,20 +8,96 @@ import service from './service'
 import update from './update'
 
 // options
-import internal from './plugins/internal'
-import probability from './plugins/probability'
+import internal from './internal'
+import probability from './probability'
 
 export * from './command'
 export * from './utils'
 export * from './receiver'
 export * from './search'
+export * from './service'
 export * from './update'
-export * from './plugins/probability'
+export * from './probability'
 
 declare module 'koishi' {
   interface EventMap {
     'dialogue/validate'(argv: Dialogue.Argv): void | string
     'dialogue/execute'(argv: Dialogue.Argv): Awaitable<void | string>
+    'dialogue/permit'(argv: Dialogue.Argv, dialogue: Dialogue): boolean
+    'dialogue/flag'(flag: keyof typeof Dialogue.Flag): void
+    'dialogue/test'(test: DialogueTest, query: Query.Expr<Dialogue>): void
+  }
+
+  interface Tables {
+    dialogue: Dialogue
+  }
+}
+
+export interface Dialogue {
+  id?: number
+  question: string
+  answer: string
+  original: string
+  flag: number
+  _weight?: number
+  _capture?: RegExpExecArray
+  _type?: Dialogue.ModifyType
+  _operator?: string
+  _timestamp?: number
+  _backup?: Readonly<Dialogue>
+}
+
+export interface DialogueTest {
+  original?: string
+  question?: string
+  answer?: string
+  regexp?: boolean
+  activated?: boolean
+  appellative?: boolean
+  noRecursive?: boolean
+}
+
+export namespace Dialogue {
+  export type ModifyType = 'create' | 'modify' | 'remove'
+  export type Field = keyof Dialogue
+
+  export interface Config {
+    historyTimeout?: number
+  }
+
+  export interface Stats {
+    questions: number
+    dialogues: number
+  }
+
+  export enum Flag {
+    /** 冻结：只有 4 级以上权限者可修改 */
+    frozen = 1,
+    /** 正则：使用正则表达式进行匹配 */
+    regexp = 2,
+    /** 上下文：后继问答可以被上下文内任何人触发 */
+    context = 4,
+    /** 代行者：由教学者完成回答的执行 */
+    substitute = 8,
+    /** 补集：上下文匹配时取补集 */
+    complement = 16,
+  }
+
+  export interface Argv {
+    app: App
+    session: Session<'authority' | 'id'>
+    args: string[]
+    config: Config
+    target?: number[]
+    options: Record<string, any>
+
+    // modify status
+    dialogues?: Dialogue[]
+    dialogueMap?: Record<number, Dialogue>
+    skipped?: number[]
+    updated?: number[]
+    unknown?: number[]
+    uneditable?: number[]
   }
 }
 
@@ -72,8 +147,6 @@ export function apply(ctx: Context, config: Config) {
   ctx.plugin(receiver, config)
   ctx.plugin(search, config)
   ctx.plugin(update, config)
-
-  // options
   ctx.plugin(internal, config)
   ctx.plugin(probability, config)
 }

@@ -1,4 +1,4 @@
-import { Dialogue, DialogueTest } from './utils'
+import { Dialogue, DialogueTest } from '.'
 import { Context, Dict } from 'koishi'
 import { getTotalWeight } from './receiver'
 
@@ -16,7 +16,7 @@ declare module 'koishi' {
   }
 }
 
-declare module './utils' {
+declare module '.' {
   interface Dialogue {
     _redirections: Dialogue[]
   }
@@ -36,7 +36,7 @@ declare module './utils' {
 
 export default function apply(ctx: Context) {
   ctx.command('teach.status').action(async ({ session }) => {
-    const stats = await ctx.teach.stats()
+    const stats = await ctx.dialogue.stats()
     return session.text('commands.teach.messages.search.stats', stats)
   })
 
@@ -82,7 +82,7 @@ export default function apply(ctx: Context) {
       const { original, parsed } = argv.config._stripQuestion(answer.slice(11, -1).trimStart())
       if (parsed in argv.questionMap) continue
       // TODO multiple tests in one query
-      const dialogues = argv.questionMap[parsed] = await ctx.teach.get({
+      const dialogues = argv.questionMap[parsed] = await ctx.dialogue.get({
         ...test,
         regexp: null,
         question: parsed,
@@ -174,7 +174,7 @@ async function showSearch(argv: Dialogue.Argv) {
 
   const test: DialogueTest = { question, answer, regexp, original }
   if (app.bail('dialogue/before-search', argv, test)) return ''
-  const dialogues = await argv.app.teach.get(test)
+  const dialogues = await argv.app.dialogue.get(test)
 
   if (pipe) {
     if (!dialogues.length) return session.text('.search.empty')
