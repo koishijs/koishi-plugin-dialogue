@@ -134,16 +134,16 @@ export function apply(ctx: Context, config: Config) {
       (newWriter && authority <= authMap[newWriter] && newWriter !== id) ||
       ((flag & Dialogue.Flag.frozen) && authority < config.authority.frozen) ||
       (writer !== id && (
-        (target && authority < config.authority.admin) || (
+        (target && authority < ctx.dialogue.config.authority.admin) || (
           (substitute || (flag & Dialogue.Flag.substitute)) &&
-          (authority <= (authMap[writer] || config.authority.base))
+          (authority <= (authMap[writer] || ctx.dialogue.config.authority.base))
         )
       ))
     )
     /* eslint-enable operator-linebreak */
   })
 
-  ctx.on('dialogue/detail-short', ({ flag }, output, { session }) => {
+  ctx.on('dialogue/abstract', ({ flag }, output, { session }) => {
     if (flag & Dialogue.Flag.frozen) {
       output.push(session.text('.writer.abstract.frozen'))
     }
@@ -194,7 +194,7 @@ export function apply(ctx: Context, config: Config) {
     }
   })
 
-  ctx.on('dialogue/test', (test, query) => {
+  ctx.on('dialogue/query', (test, query) => {
     if (test.writer !== undefined) query.writer = test.writer
   })
 }

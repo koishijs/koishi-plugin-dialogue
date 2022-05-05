@@ -124,7 +124,7 @@ export function apply(ctx: Context, config: Config) {
     output.push(session.text('.context.' + prefix + path, [guilds.length]))
   })
 
-  ctx.on('dialogue/detail-short', ({ guilds, flag }, output, { session, options }) => {
+  ctx.on('dialogue/abstract', ({ guilds, flag }, output, { session, options }) => {
     if (!options._guilds && session.subtype === 'group') {
       const isReversed = flag & Dialogue.Flag.complement
       const hasGroup = guilds.includes(session.gid)
@@ -138,7 +138,7 @@ export function apply(ctx: Context, config: Config) {
     test.guilds = [session.gid]
   })
 
-  ctx.on('dialogue/test', (test, query) => {
+  ctx.on('dialogue/query', (test, query) => {
     if (!test.guilds || !test.guilds.length) return
     query.$and.push({
       $or: [{

@@ -26,7 +26,7 @@
     "teach",
     "dialogue",
     "conversation",
-    "required:teach"
+    "required:dialogue"
   ],
   "peerDependencies": {
     "koishi": "^4.6.2",

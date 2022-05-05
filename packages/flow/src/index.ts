@@ -1,5 +1,5 @@
 import { contain, Context, Dict, difference, Query, union } from 'koishi'
-import { Dialogue, equal, formatQuestionAnswers, prepareTargets, RE_DIALOGUES, split } from 'koishi-plugin-dialogue'
+import { Dialogue, equal, prepareTargets, RE_DIALOGUES, split } from 'koishi-plugin-dialogue'
 
 declare module 'koishi-plugin-dialogue/lib/receiver' {
   interface SessionState {
@@ -56,41 +56,40 @@ export function apply(ctx: Context, config: Dialogue.Config) {
     .option('successorTimeout', '-z [time:posint]')
     .option('context', '-c')
     .option('context', '-C', { value: false })
+    .before((argv) => {
+      const { options, session } = argv
 
-  ctx.emit('dialogue/flag', 'context')
-
-  ctx.on('dialogue/validate', (argv) => {
-    const { options, session } = argv
-
-    if ('setPred' in options) {
-      if ('addPred' in options) {
-        return session.text('.options-conflict', ['--set-pred, --add-pred'])
-      } else {
-        argv.predecessors = split(options.setPred)
-        argv.predOverwrite = true
+      if ('setPred' in options) {
+        if ('addPred' in options) {
+          return session.text('.options-conflict', ['--set-pred, --add-pred'])
+        } else {
+          argv.predecessors = split(options.setPred)
+          argv.predOverwrite = true
+        }
+      } else if ('addPred' in options) {
+        argv.predecessors = split(options.addPred)
+        argv.predOverwrite = false
       }
-    } else if ('addPred' in options) {
-      argv.predecessors = split(options.addPred)
-      argv.predOverwrite = false
-    }
 
-    if ('setSucc' in options) {
-      if ('addSucc' in options) {
-        return session.text('.options-conflict', ['--set-succ, --add-succ'])
-      } else {
-        argv.successors = split(options.setSucc)
+      if ('setSucc' in options) {
+        if ('addSucc' in options) {
+          return session.text('.options-conflict', ['--set-succ, --add-succ'])
+        } else {
+          argv.successors = split(options.setSucc)
+          argv.succOverwrite = true
+        }
+      } else if ('addSucc' in options) {
+        argv.successors = split(options.addSucc)
+        argv.succOverwrite = false
+      }
+
+      if (options.remove) {
+        argv.successors = []
         argv.succOverwrite = true
       }
-    } else if ('addSucc' in options) {
-      argv.successors = split(options.addSucc)
-      argv.succOverwrite = false
-    }
+    })
 
-    if (options.remove) {
-      argv.successors = []
-      argv.succOverwrite = true
-    }
-  })
+  ctx.emit('dialogue/flag', 'context')
 
   ctx.on('dialogue/modify', ({ predOverwrite, predecessors }, data) => {
     // merge predecessors
@@ -179,14 +178,14 @@ export function apply(ctx: Context, config: Dialogue.Config) {
       output.push(argv.session.text('.flowgraph.detail.timeout', dialogue))
     }
     if (dialogue._predecessors.length) {
-      output.push(argv.session.text('.flowgraph.detail.predecessors'), ...formatQuestionAnswers(argv, dialogue._predecessors))
+      output.push(argv.session.text('.flowgraph.detail.predecessors'), ...argv.app.dialogue.list(argv, dialogue._predecessors))
     }
     if (dialogue._successors.length) {
-      output.push(argv.session.text('.flowgraph.detail.successors'), ...formatQuestionAnswers(argv, dialogue._successors))
+      output.push(argv.session.text('.flowgraph.detail.successors'), ...argv.app.dialogue.list(argv, dialogue._successors))
     }
   })
 
-  ctx.on('dialogue/detail-short', (dialogue, output, { session }) => {
+  ctx.on('dialogue/abstract', (dialogue, output, { session }) => {
     if ((dialogue.successorTimeout || successorTimeout) !== successorTimeout) {
       output.push(`z=${dialogue.successorTimeout / 1000}`)
     }
@@ -225,9 +224,9 @@ export function apply(ctx: Context, config: Dialogue.Config) {
     await argv.app.parallel('dialogue/search', argv, test, successors)
   })
 
-  ctx.on('dialogue/list', ({ _successors }, output, prefix, argv) => {
+  ctx.on('dialogue/appendix', ({ _successors }, output, prefix, argv) => {
     if (_successors) {
-      output.push(...formatQuestionAnswers(argv, _successors, prefix + '> '))
+      output.push(...argv.app.dialogue.list(argv, _successors, prefix + '> '))
     }
   })
 
@@ -272,7 +271,7 @@ export function apply(ctx: Context, config: Dialogue.Config) {
     }, dialogue.successorTimeout || successorTimeout)
   })
 
-  ctx.on('dialogue/test', ({ predecessors, stateful, noRecursive }, query) => {
+  ctx.on('dialogue/query', ({ predecessors, stateful, noRecursive }, query) => {
     if (noRecursive) {
       query.predecessors = { $size: 0 }
     } else if (predecessors !== undefined) {

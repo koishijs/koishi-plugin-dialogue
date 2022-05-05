@@ -79,7 +79,7 @@ export function apply(ctx: Context, config: Config) {
     output.push(`${session.text('.time.detail')}${formatTime(dialogue.startTime)}-${formatTime(dialogue.endTime)}`)
   })
 
-  ctx.on('dialogue/detail-short', (dialogue, output) => {
+  ctx.on('dialogue/abstract', (dialogue, output) => {
     if (dialogue.startTime === dialogue.endTime) return
     output.push(`${formatTime(dialogue.startTime)}-${formatTime(dialogue.endTime)}`)
   })
@@ -92,7 +92,7 @@ export function apply(ctx: Context, config: Config) {
     ],
   })
 
-  ctx.on('dialogue/test', (test, query) => {
+  ctx.on('dialogue/query', (test, query) => {
     if (test.matchTime !== undefined) {
       query.$and.push({ $expr: { $gte: [getRangeProduct(test.matchTime), 0] } as any })
     }

@@ -4,7 +4,7 @@ import { install, InstalledClock } from '@sinonjs/fake-timers'
 import createEnvironment from '.'
 import * as jest from 'jest-mock'
 
-describe('Teach Plugin - Basic Support', () => {
+describe.only('Teach Plugin - Basic Support', () => {
   const { app } = createEnvironment({
     mergeThreshold: 1,
   })

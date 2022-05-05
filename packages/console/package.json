@@ -27,7 +27,7 @@
     "dialogue",
     "conversation",
     "required:console",
-    "required:teach"
+    "required:dialogue"
   ],
   "peerDependencies": {
     "@koishijs/plugin-console": "^3.2.9",
