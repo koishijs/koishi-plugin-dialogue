@@ -1,9 +1,5 @@
-import {
-  Argv, Awaitable, Channel, Context, escapeRegExp, makeArray,
-  Next, noop, Random, segment, Session, User,
-} from 'koishi'
+import { Argv, Awaitable, Channel, Context, Next, noop, Random, segment, Session, User } from 'koishi'
 import { Dialogue, DialogueTest } from '.'
-import { simplify } from 'simplify-chinese'
 
 declare module 'koishi' {
   interface App {
@@ -29,24 +25,11 @@ declare module 'koishi' {
   }
 }
 
-interface Question {
-  /** 被 unescape 处理后原本的句子 */
-  original: string
-  /** 去除句首句尾标点符号，句中空格和句首称呼的句子 */
-  parsed: string
-  /** 是否含有称呼 */
-  appellative: boolean
-  /** 是否仅含有称呼 */
-  activated: boolean
-}
-
 declare module '.' {
   namespace Dialogue {
     interface Config {
-      nickname?: string | string[]
       appellationTimeout?: number
       maxRedirections?: number
-      _stripQuestion?(source: string): Question
     }
   }
 }
@@ -166,10 +149,6 @@ tokenizer.interpolate('$n', '', (rest) => {
   return { rest, tokens: [], source: '' }
 })
 
-const halfWidth = ',,.~?!()[]'
-const fullWidth = '，、。～？！（）【】'
-const fullWidthRegExp = new RegExp(`[${fullWidth}]`)
-
 export async function triggerDialogue(ctx: Context, session: Session, next: Next = noop) {
   if (!session.content) return
 
@@ -249,35 +228,10 @@ export async function triggerDialogue(ctx: Context, session: Session, next: Next
 }
 
 export default function receiver(ctx: Context, config: Dialogue.Config) {
-  const { nickname = ctx.app.options.nickname, maxRedirections = 3 } = config
-  const nicknames = makeArray(nickname).map(escapeRegExp)
-  const nicknameRE = new RegExp(`^((${nicknames.join('|')})[,，]?\\s*)+`)
+  const { maxRedirections = 3 } = config
   const ctx2 = ctx.guild()
 
   ctx.app._dialogueStates = {}
-
-  config._stripQuestion = (source) => {
-    const original = segment.unescape(source)
-    source = segment.transform(source, {
-      text: ({ content }, index, chain) => {
-        let message = simplify(segment.unescape('' + content))
-          .toLowerCase()
-          .replace(/\s+/g, '')
-          .replace(fullWidthRegExp, $0 => halfWidth[fullWidth.indexOf($0)])
-        if (index === 0) message = message.replace(/^[()\[\]]*/, '')
-        if (index === chain.length - 1) message = message.replace(/[\.,?!()\[\]~]*$/, '')
-        return message
-      },
-    })
-    const capture = nicknameRE.exec(source)
-    const unprefixed = capture ? source.slice(capture[0].length) : source
-    return {
-      original,
-      parsed: unprefixed || source,
-      appellative: unprefixed && unprefixed !== source,
-      activated: !unprefixed && unprefixed !== source,
-    }
-  }
 
   ctx.before('attach', (session) => {
     if (session.parsed.appel) return
@@ -320,7 +274,7 @@ export default function receiver(ctx: Context, config: Dialogue.Config) {
 
   ctx.on('dialogue/receive', ({ session, test }) => {
     if (session.content.includes('[CQ:image,')) return true
-    const { original, parsed, appellative, activated } = config._stripQuestion(session.content)
+    const { original, parsed, appellative, activated } = ctx.dialogue.stripQuestion(session.content)
     test.question = parsed
     test.original = original
     test.activated = activated

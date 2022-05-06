@@ -1,7 +1,6 @@
 import { Context, defineProperty, Query, segment } from 'koishi'
 import { Dialogue } from '.'
-import { create, update } from './update'
-import { formatQuestionAnswers } from './search'
+import { analyze, create } from './update'
 import { distance } from 'fastest-levenshtein'
 
 declare module 'koishi' {
@@ -12,36 +11,48 @@ declare module 'koishi' {
   }
 }
 
+declare module '.' {
+  namespace Dialogue {
+    interface Options {
+      ignoreHint?: boolean
+      regexp?: boolean
+      redirect?: string
+    }
+  }
+}
+
 export default function apply(ctx: Context, config: Dialogue.Config) {
   ctx.command('teach')
     .option('ignoreHint', '-I')
     .option('regexp', '-x', { authority: config.authority.regExp })
     .option('regexp', '-X', { value: false })
     .option('redirect', '=> <answer:string>')
-    .before(({ options, args, session }) => {
-      function parseArgument() {
-        if (!args.length) return ''
-        const [arg] = args.splice(0, 1)
-        if (!arg || arg === '~' || arg === '～') return ''
-        return arg.trim()
-      }
 
-      const question = parseArgument()
-      const answer = options.redirect ? `$(dialogue ${options.redirect})` : parseArgument()
-      if (args.length) {
-        return session.text('.too-many-arguments')
-      } else if (/\[CQ:(?!face)/.test(question)) {
-        return session.text('.prohibited-cq-code')
-      }
-      const { original, parsed, appellative } = options.regexp
-        ? { original: segment.unescape(question), parsed: question, appellative: false }
-        : config._stripQuestion(question)
-      defineProperty(options, 'appellative', appellative)
-      defineProperty(options, 'original', original)
-      args[0] = parsed
-      args[1] = answer
-      if (!args[0] && !args[1]) args.splice(0, Infinity)
-    })
+  ctx.before('dialogue/action', (session) => {
+    function parseArgument() {
+      if (!args.length) return ''
+      const arg = args.shift()
+      if (!arg || arg === '~' || arg === '～') return ''
+      return arg.trim()
+    }
+
+    const { options, args } = session.argv
+    const question = parseArgument()
+    const answer = options.redirect ? `$(dialogue ${options.redirect})` : parseArgument()
+    if (args.length) {
+      return session.text('.too-many-arguments')
+    } else if (/\[CQ:(?!face)/.test(question)) {
+      return session.text('.prohibited-cq-code')
+    }
+    const { original, parsed, appellative } = options.regexp
+      ? { original: segment.unescape(question), parsed: question, appellative: false }
+      : ctx.dialogue.stripQuestion(question)
+    defineProperty(options, 'appellative', appellative)
+    defineProperty(options, 'original', original)
+    args[0] = parsed
+    args[1] = answer
+    if (!args[0] && !args[1]) args.splice(0, Infinity)
+  })
 
   function maybeAnswer(question: string, dialogues: Dialogue[]) {
     return dialogues.every(dialogue => {
@@ -55,14 +66,14 @@ export default function apply(ctx: Context, config: Dialogue.Config) {
     return question.startsWith('^') || question.endsWith('$')
   }
 
-  ctx.before('dialogue/modify', async (argv) => {
-    const { options, session, target, dialogues, args } = argv
-    const { ignoreHint, regexp } = options
+  ctx.before('dialogue/modify', async (session) => {
+    const { options, args } = session.argv
+    const { ignoreHint, regexp, target, dialogues } = options
     const [question, answer] = args
 
-    function applySuggestion(argv: Dialogue.Argv) {
-      return argv.session.withScope('commands.teach.messages', () => {
-        return argv.target ? update(argv) : create(argv)
+    function applySuggestion(session: Dialogue.Session) {
+      return session.withScope('commands.teach.messages', () => {
+        return session.argv.options.target ? analyze(session) : create(session)
       })
     }
 
@@ -74,7 +85,7 @@ export default function apply(ctx: Context, config: Dialogue.Config) {
         if (content && content !== '.' && content !== '。') return next()
         args[1] = options.original
         args[0] = ''
-        return applySuggestion(argv)
+        return applySuggestion(session)
       })
       return session.text('.probably-modify-answer')
     }
@@ -88,7 +99,7 @@ export default function apply(ctx: Context, config: Dialogue.Config) {
         content = content.trim()
         if (content && content !== '.' && content !== '。') return next()
         options.regexp = true
-        return applySuggestion(argv)
+        return applySuggestion(session)
       })
       const operation = session.text('.operation', [target ? 'modify' : 'create'])
       return session.text('.probably-regexp', [operation])
@@ -105,21 +116,23 @@ export default function apply(ctx: Context, config: Dialogue.Config) {
     }
   })
 
-  ctx.before('dialogue/modify', async ({ options, target, args, session }) => {
+  ctx.before('dialogue/modify', async (session) => {
+    const { options, args } = session.argv
     // missing question or answer when creating a dialogue
-    if (options.create && !target && !(args[0] && args[1])) {
+    if (options.action === 'create' && !options.target && !(args[0] && args[1])) {
       return session.text('.missing-question-or-answer')
     }
   })
 
-  ctx.on('dialogue/modify', ({ options, args }, data) => {
+  ctx.on('dialogue/modify', (session, data) => {
+    const { args, options } = session.argv
+
     if (args[1]) {
       data.answer = args[1]
     }
 
     if (options.regexp !== undefined) {
-      data.flag &= ~Dialogue.Flag.regexp
-      data.flag |= +options.regexp * Dialogue.Flag.regexp
+      data.flag = (data.flag & ~Dialogue.Flag.regexp) | (+options.regexp * Dialogue.Flag.regexp)
     }
 
     if (args[0]) {
@@ -128,30 +141,10 @@ export default function apply(ctx: Context, config: Dialogue.Config) {
     }
   })
 
-  ctx.on('dialogue/detail', async (dialogue, output, argv) => {
+  ctx.on('dialogue/detail', async (dialogue, output, session) => {
     if (dialogue._redirections?.length) {
-      output.push(argv.session.text('.redirections'), ...formatQuestionAnswers(argv, dialogue._redirections))
+      output.push(session.text('.redirections'), ...ctx.dialogue.list(session, dialogue._redirections))
     }
-  })
-
-  ctx.on('dialogue/flag', (flag) => {
-    ctx.before('dialogue/search', ({ options }, test) => {
-      test[flag] = options[flag]
-    })
-
-    ctx.on('dialogue/modify', ({ options }: Dialogue.Argv, data: Dialogue) => {
-      if (options[flag] !== undefined) {
-        data.flag &= ~Dialogue.Flag[flag]
-        data.flag |= +options[flag] * Dialogue.Flag[flag]
-      }
-    })
-
-    ctx.on('dialogue/test', (test, query) => {
-      if (test[flag] === undefined) return
-      query.$and.push({
-        flag: { [test[flag] ? '$bitsAllSet' : '$bitsAllClear']: Dialogue.Flag[flag] },
-      })
-    })
   })
 
   ctx.before('command/execute', ({ command, session }) => {
@@ -160,7 +153,8 @@ export default function apply(ctx: Context, config: Dialogue.Config) {
     }
   })
 
-  ctx.before('dialogue/modify', async ({ args, session }) => {
+  ctx.before('dialogue/modify', async (session) => {
+    const { args } = session.argv
     if (!args[1] || !ctx.assets) return
     try {
       args[1] = await ctx.assets.transform(args[1])
@@ -170,7 +164,7 @@ export default function apply(ctx: Context, config: Dialogue.Config) {
     }
   })
 
-  ctx.on('dialogue/test', ({ regexp, answer, question, original }, query) => {
+  ctx.on('dialogue/query', ({ regexp, answer, question, original }, query) => {
     if (regexp) {
       if (answer) query.answer = { $regex: new RegExp(answer, 'i') }
       if (original) query.original = { $regex: new RegExp(original, 'i') }

@@ -34,8 +34,8 @@ commands:
       prohibited-command: 禁止在教学回答中插值调用 {0} 指令。
       prohibited-cq-code: 问题必须是纯文本。
       illegal-regexp: 问题含有错误的或不支持的正则表达式语法。
-      probably-modify-answer: 推测你想修改的是回答而不是问题。发送空行或句号以修改回答，使用 -I 选项以忽略本提示。
-      probably-regexp: 推测你想{0}的问题是正则表达式。发送空行或句号以添加 -x 选项，使用 -I 选项以忽略本提示。
+      probably-modify-answer: 推测你想修改的是回答而不是问题。发送句号以修改回答，使用 -I 选项以忽略本提示。
+      probably-regexp: 推测你想{0}的问题是正则表达式。发送句号以添加 -x 选项，使用 -I 选项以忽略本提示。
       upload-failed: 上传资源时发生错误。
       redirections: 重定向到：
       create-success: 问答已添加，编号为 {0}。
@@ -53,10 +53,9 @@ commands:
       no-history: 没有搜索到满足条件的教学操作。
       recent-history: 近期执行的教学操作有：
       max-previews: 一次最多同时预览 {0} 个问答。
-      detail: '{0}：{1}'
       review: '{0}于：{1 | time}前'
       detail-header: 问答 {0} 的{1}：
-
+      detail: '{0}：{1}'
       entity:
         question: 问题
         answer: 回答
@@ -73,7 +72,6 @@ commands:
       search:
         count: 共 {0} 个
         empty: 没有搜索到任何问答。
-        stats: 共收录了 {questions} 个问题和 {dialogues} 个回答。
         regexp: 正则
         regexp-hint: ，请尝试使用正则表达式匹配
         probability: 实际触发概率：
@@ -100,3 +98,7 @@ commands:
 
   dialogue:
     description: 触发教学对话
+
+    stats:
+      messages:
+        output: 共收录了 {questions} 个问题和 {dialogues} 个回答。

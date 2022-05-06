@@ -1,18 +1,12 @@
 import { Dialogue, DialogueTest } from '.'
 import { Context, Dict } from 'koishi'
 import { getTotalWeight } from './receiver'
-
-export interface Abstract extends Array<string> {
-  questionType?: string
-  answerType?: string
-}
+import { formatAnswers, formatPrefix } from './service'
 
 declare module 'koishi' {
   interface EventMap {
-    'dialogue/list'(dialogue: Dialogue, output: string[], prefix: string, argv: Dialogue.Argv): void
-    'dialogue/detail-short'(dialogue: Dialogue, output: Abstract, argv: Dialogue.Argv): void
-    'dialogue/before-search'(argv: Dialogue.Argv, test: DialogueTest): void | boolean
-    'dialogue/search'(argv: Dialogue.Argv, test: DialogueTest, dialogue: Dialogue[]): Promise<void>
+    'dialogue/before-search'(argv: Dialogue.Session, test: DialogueTest): void | boolean
+    'dialogue/search'(argv: Dialogue.Session, test: DialogueTest, dialogue: Dialogue[]): Promise<void>
   }
 }
 
@@ -28,153 +22,86 @@ declare module '.' {
       maxAnswerLength?: number
     }
 
-    interface Argv {
+    interface Options {
       questionMap?: Dict<Dialogue[]>
+      autoMerge?: boolean
+      recursive?: boolean
+      page?: number
+      pipe?: string
     }
   }
 }
 
 export default function apply(ctx: Context) {
-  ctx.command('teach.status').action(async ({ session }) => {
+  ctx.command('dialogue.stats').action(async ({ session }) => {
     const stats = await ctx.dialogue.stats()
-    return session.text('commands.teach.messages.search.stats', stats)
+    return session.text('.output', stats)
   })
 
   ctx.command('teach')
-    .option('search', '', { notUsage: true })
     .option('page', '/ <page:posint>')
     .option('autoMerge', '')
     .option('recursive', '-R', { value: false })
     .option('pipe', '| <op:text>')
 
-  ctx.on('dialogue/execute', (argv) => {
-    const { search } = argv.options
-    if (search) return showSearch(argv)
-  })
-
-  ctx.on('dialogue/list', ({ _redirections }, output, prefix, argv) => {
+  ctx.on('dialogue/appendix', ({ _redirections }, output, prefix, argv) => {
     if (!_redirections) return
     output.push(...formatAnswers(argv, _redirections, prefix + '= '))
   })
 
-  ctx.on('dialogue/detail-short', ({ flag }, output) => {
+  ctx.on('dialogue/abstract', ({ flag }, output) => {
     if (flag & Dialogue.Flag.regexp) {
       output.questionType = 'regexp'
     }
   })
 
-  ctx.before('dialogue/search', ({ options }, test) => {
-    test.noRecursive = options.recursive === false
+  ctx.before('dialogue/search', ({ argv }, test) => {
+    test.noRecursive = argv.options.recursive === false
   })
 
-  ctx.before('dialogue/search', ({ options }, test) => {
-    test.appellative = options.appellative
+  ctx.before('dialogue/search', ({ argv }, test) => {
+    test.appellative = argv.options.appellative
   })
 
-  ctx.on('dialogue/search', async (argv, test, dialogues) => {
-    if (!argv.questionMap) {
-      argv.questionMap = { [test.question]: dialogues }
+  ctx.on('dialogue/search', async (session, test, dialogues) => {
+    const { options } = session.argv
+    if (!options.questionMap) {
+      options.questionMap = { [test.question]: dialogues }
     }
     for (const dialogue of dialogues) {
       const { answer } = dialogue
       // TODO extract dialogue command
       if (!answer.startsWith('%{dialogue ')) continue
-      const { original, parsed } = argv.config._stripQuestion(answer.slice(11, -1).trimStart())
-      if (parsed in argv.questionMap) continue
+      const { original, parsed } = ctx.dialogue.stripQuestion(answer.slice(11, -1).trimStart())
+      if (parsed in options.questionMap) continue
       // TODO multiple tests in one query
-      const dialogues = argv.questionMap[parsed] = await ctx.dialogue.get({
+      const dialogues = options.questionMap[parsed] = await ctx.dialogue.get({
         ...test,
         regexp: null,
         question: parsed,
         original: original,
       })
       Object.defineProperty(dialogue, '_redirections', { writable: true, value: dialogues })
-      await argv.app.parallel('dialogue/search', argv, test, dialogues)
+      await ctx.parallel('dialogue/search', session, test, dialogues)
     }
   })
+
+  ctx.on('dialogue/action', (session) => {
+    const { options } = session.argv
+    if (options.action !== 'search') return
+    return showSearch(session)
+  }, true)
 }
 
-export function formatAnswer(source: string, { maxAnswerLength = 100 }: Dialogue.Config) {
-  let trimmed = false
-  const lines = source.split(/(\r?\n|\$n)/g)
-  if (lines.length > 1) {
-    trimmed = true
-    source = lines[0].trim()
-  }
-  source = source.replace(/\[CQ:image,[^\]]+\]/g, '[图片]')
-  if (source.length > maxAnswerLength) {
-    trimmed = true
-    source = source.slice(0, maxAnswerLength)
-  }
-  if (trimmed && !source.endsWith('……')) {
-    if (source.endsWith('…')) {
-      source += '…'
-    } else {
-      source += '……'
-    }
-  }
-  return source
-}
-
-export function getAbstract(argv: Dialogue.Argv, dialogue: Dialogue) {
-  const abstract: Abstract = []
-  argv.app.emit('dialogue/detail-short', dialogue, abstract, argv)
-  return abstract
-}
-
-export function formatAbstract(dialogue: Dialogue, abstract: Abstract) {
-  return `${dialogue.id}. ${abstract.length ? `[${abstract.join(', ')}] ` : ''}`
-}
-
-function formatPrefix(argv: Dialogue.Argv, dialogue: Dialogue, showAnswerType = false) {
-  const details = getAbstract(argv, dialogue)
-  let result = formatAbstract(dialogue, details)
-  if (details.questionType) {
-    result += `[${argv.session.text('.entity.' + details.questionType)}] `
-  }
-  if (showAnswerType && details.answerType) {
-    result += `[${argv.session.text('.entity.' + details.answerType)}] `
-  }
-  return result
-}
-
-export function formatAnswers(argv: Dialogue.Argv, dialogues: Dialogue[], prefix = '') {
-  return dialogues.map((dialogue) => {
-    const { answer } = dialogue
-    const output = [`${prefix}${formatPrefix(argv, dialogue, true)}${formatAnswer(answer, argv.config)}`]
-    argv.app.emit('dialogue/list', dialogue, output, prefix, argv)
-    return output.join('\n')
-  })
-}
-
-export function formatDialogue(argv: Dialogue.Argv, dialogue: Dialogue) {
-  const abstract = getAbstract(argv, dialogue)
-  const { original, answer } = dialogue
-  const comma = argv.session.text('general.comma')
-  const questionType = argv.session.text(`.entity.${abstract.questionType || 'question'}`)
-  const answerType = argv.session.text(`.entity.${abstract.answerType || 'answer'}`)
-  return [
-    argv.session.text('.detail', [formatAbstract(dialogue, abstract) + questionType, original]),
-    argv.session.text('.detail', [answerType, formatAnswer(answer, argv.config)]),
-  ].join(comma)
-}
-
-export function formatQuestionAnswers(argv: Dialogue.Argv, dialogues: Dialogue[], prefix = '') {
-  return dialogues.map((dialogue) => {
-    const output = [prefix + formatDialogue(argv, dialogue)]
-    argv.app.emit('dialogue/list', dialogue, output, prefix, argv)
-    return output.join('\n')
-  })
-}
-
-async function showSearch(argv: Dialogue.Argv) {
-  const { app, session, options, args: [question, answer] } = argv
+async function showSearch(session: Dialogue.Session) {
+  const app = session.app
+  const { options, args: [question, answer] } = session.argv
   const { regexp, page = 1, original, pipe, recursive, autoMerge } = options
-  const { itemsPerPage = 30, mergeThreshold = 5 } = argv.config
+  const { itemsPerPage = 30, mergeThreshold = 5 } = app.dialogue.config
 
   const test: DialogueTest = { question, answer, regexp, original }
-  if (app.bail('dialogue/before-search', argv, test)) return ''
-  const dialogues = await argv.app.dialogue.get(test)
+  if (app.bail('dialogue/before-search', session, test)) return ''
+  const dialogues = await app.dialogue.get(test)
 
   if (pipe) {
     if (!dialogues.length) return session.text('.search.empty')
@@ -186,23 +113,23 @@ async function showSearch(argv: Dialogue.Argv) {
   }
 
   if (recursive !== false && !autoMerge) {
-    await argv.app.parallel('dialogue/search', argv, test, dialogues)
+    await app.parallel('dialogue/search', session, test, dialogues)
   }
 
   if (!original && !answer) {
     if (!dialogues.length) return sendEmpty('.search.empty-all')
-    return sendResult('.search.result-all', formatQuestionAnswers(argv, dialogues))
+    return sendResult('.search.result-all', app.dialogue.list(session, dialogues))
   }
 
   if (!options.regexp) {
     const hint = options.regexp !== false ? session.text('.search.regexp-hint') : ''
     if (!original) {
       if (!dialogues.length) return sendEmpty('.search.empty-answer', hint)
-      const output = dialogues.map(d => `${formatPrefix(argv, d)}${d.original}`)
+      const output = dialogues.map(d => `${formatPrefix(session, d)}${d.original}`)
       return sendResult('.search.result-answer', output)
     } else if (!answer) {
       if (!dialogues.length) return sendEmpty('.search.empty-question', hint)
-      const output = formatAnswers(argv, dialogues)
+      const output = formatAnswers(session, dialogues)
       const state = app.getSessionState(session)
       state.isSearch = true
       state.test = test
@@ -219,7 +146,7 @@ async function showSearch(argv: Dialogue.Argv) {
 
   let output: string[]
   if (!autoMerge || question && answer) {
-    output = formatQuestionAnswers(argv, dialogues)
+    output = app.dialogue.list(session, dialogues)
   } else {
     const idMap: Dict<number[]> = {}
     for (const dialogue of dialogues) {
@@ -227,7 +154,7 @@ async function showSearch(argv: Dialogue.Argv) {
       if (!idMap[key]) idMap[key] = []
       idMap[key].push(dialogue.id)
     }
-    const type = session.text('.entity.' + (question ? 'answer' : 'question'))
+    const type = session.text('commands.teach.messages.entity.' + (question ? 'answer' : 'question'))
     output = Object.keys(idMap).map((key) => {
       const { length } = idMap[key]
       return length <= mergeThreshold

@@ -2,7 +2,7 @@ import { App } from 'koishi'
 import * as teach from '../src'
 import mock from '@koishijs/plugin-mock'
 
-export default function (config: teach.Config) {
+export default function (config: teach.Config = {}) {
   const app = new App({
     nickname: ['koishi', 'satori'],
   })

@@ -32,8 +32,7 @@
     "conversation",
     "required:database",
     "optional:assets",
-    "optional:console",
-    "impl:teach"
+    "impl:dialogue"
   ],
   "peerDependencies": {
     "koishi": "^4.6.2"

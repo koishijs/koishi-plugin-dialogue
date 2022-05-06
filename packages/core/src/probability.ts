@@ -6,6 +6,13 @@ declare module '.' {
     probS: number
     probA: number
   }
+
+  namespace Dialogue {
+    interface Options {
+      probabilityStrict?: number
+      probabilityAppellative?: number
+    }
+  }
 }
 
 declare module './receiver' {
@@ -27,8 +34,9 @@ export default function probability(ctx: Context, config: Dialogue.Config) {
     .option('probabilityStrict', '-p <prob>', { type: isZeroToOne })
     .option('probabilityAppellative', '-P <prob>', { type: isZeroToOne })
 
-  ctx.on('dialogue/modify', ({ options }, data) => {
-    if (options.create) {
+  ctx.on('dialogue/modify', (session, data) => {
+    const { options } = session.argv
+    if (options.action === 'create') {
       data.probS = options.probabilityStrict ?? 1 - +options.appellative
       data.probA = options.probabilityAppellative ?? +options.appellative
     } else {
@@ -87,12 +95,12 @@ export default function probability(ctx: Context, config: Dialogue.Config) {
     }, appellationTimeout)
   })
 
-  ctx.on('dialogue/detail', (dialogue, output, { session }) => {
+  ctx.on('dialogue/detail', (dialogue, output, session) => {
     const { probS, probA } = dialogue
     if (probS < 1 || probA > 0) output.push(session.text('.probability.detail', dialogue))
   })
 
-  ctx.on('dialogue/detail-short', ({ probS, probA }, output) => {
+  ctx.on('dialogue/abstract', ({ probS, probA }, output) => {
     if (probS < 1) output.push(`p=${probS}`)
     if (probA > 0) output.push(`P=${probA}`)
   })

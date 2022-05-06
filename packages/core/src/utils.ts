@@ -1,6 +1,3 @@
-import { difference, observe } from 'koishi'
-import { Dialogue } from '.'
-
 export function split(source: string) {
   if (!source) return []
   return source.split(',').flatMap((value) => {
@@ -14,14 +11,6 @@ export function split(source: string) {
 
 export function equal(array1: (string | number)[], array2: (string | number)[]) {
   return array1.slice().sort().join() === array2.slice().sort().join()
-}
-
-export function prepareTargets(argv: Dialogue.Argv, dialogues = argv.dialogues) {
-  const targets = dialogues.filter((dialogue) => {
-    return !argv.app.bail('dialogue/permit', argv, dialogue)
-  })
-  argv.uneditable.unshift(...difference(dialogues, targets).map(d => d.id))
-  return targets.map(data => observe(data, `dialogue ${data.id}`))
 }
 
 export const RE_DIALOGUES = /^\d+(\.\.\d+)?(,\d+(\.\.\d+)?)*$/

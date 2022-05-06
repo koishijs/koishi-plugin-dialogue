@@ -1,7 +1,7 @@
 /* eslint-disable no-irregular-whitespace */
 
-import { Argv, Context, escapeRegExp, Session } from 'koishi'
-import { create } from './update'
+import { Argv, Context, deduplicate, escapeRegExp, Session } from 'koishi'
+import { split } from './utils'
 import { Dialogue } from '.'
 import {} from '@koishijs/plugin-console'
 import {} from '@koishijs/plugin-status'
@@ -88,7 +88,8 @@ const cheatSheet = (session: Session<'authority'>, config: Dialogue.Config) => {
 　\${}：表达式插值`
 }
 
-function registerPrefix(ctx: Context, prefix: string) {
+export default function command(ctx: Context, config: Dialogue.Config) {
+  const { prefix } = config
   const g = '\\d+(?:\\.\\.\\d+)?'
   const last = prefix[prefix.length - 1]
   const p = escapeRegExp(prefix)
@@ -96,8 +97,8 @@ function registerPrefix(ctx: Context, prefix: string) {
   const teachRegExp = new RegExp(`^${p}(${l}?)((${g}(?:,${g})*)?|${l}?)$`)
   //                                   $1     $2
 
-  ctx.before('parse', (content, session) => {
-    const argv = Argv.parse(content)
+  ctx.before('parse', (content, session: Dialogue.Session) => {
+    const argv: Dialogue.Session['argv'] = Argv.parse(content)
     if (session.quote || !argv.tokens.length) return
     let prefix = argv.tokens[0].content
     if (session.parsed.prefix) {
@@ -113,38 +114,34 @@ function registerPrefix(ctx: Context, prefix: string) {
     const { length } = argv.tokens
     if (capture[1] === last) {
       if (!argv.tokens.length) {
-        argv.name = 'teach.status'
+        argv.name = 'dialogue.stats'
         return argv
       }
-      argv.options['search'] = true
+      argv.options.action = 'search'
       if (capture[2] === last) {
-        argv.options['autoMerge'] = true
-        argv.options['regexp'] = true
+        argv.options.autoMerge = true
+        argv.options.regexp = true
       }
     } else if (!capture[2] && !length) {
-      argv.options['help'] = true
+      argv.options.help = true
     }
 
     if (capture[2] && capture[2] !== last) {
-      argv.options['target'] = capture[2]
+      argv.options.target = deduplicate(split(capture[2]))
     }
 
     argv.name = 'teach'
     return argv
   })
-}
-
-export default function command(ctx: Context, config: Dialogue.Config = {}) {
-  registerPrefix(ctx, config.prefix)
 
   ctx.command('teach', { authority: config.authority.base, checkUnknown: true, hideOptions: true })
     .userFields(['authority', 'id'])
+    .option('target', '')
     .usage(session => cheatSheet(session, config))
-    .action(async (argv) => {
-      const { options, session, args } = argv
-      const argd: Dialogue.Argv = { app: ctx.app, session, args, config, options }
-      return ctx.bail('dialogue/validate', argd)
-        || ctx.bail('dialogue/execute', argd)
-        || create(argd)
+    .before(({ session }) => {
+      return ctx.serial('dialogue/before-action', session as never)
+    }, true)
+    .action(({ session }) => {
+      return ctx.bail('dialogue/action', session as never)
     })
 }

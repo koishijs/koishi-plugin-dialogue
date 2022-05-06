@@ -1,15 +1,12 @@
-import { Awaitable, Context, deduplicate, difference, isInteger, pick, sleep, Time } from 'koishi'
-import { prepareTargets, RE_DIALOGUES, split } from './utils'
+import { Awaitable, Context, difference, observe, pick, sleep } from 'koishi'
 import { Dialogue } from '.'
-import { formatDialogue, formatQuestionAnswers } from './search'
 
 declare module 'koishi' {
   interface EventMap {
-    'dialogue/before-modify'(argv: Dialogue.Argv): Awaitable<void | string>
-    'dialogue/modify'(argv: Dialogue.Argv, dialogue: Dialogue): void
-    'dialogue/after-modify'(argv: Dialogue.Argv): void
-    'dialogue/before-detail'(argv: Dialogue.Argv): Awaitable<void>
-    'dialogue/detail'(dialogue: Dialogue, output: string[], argv: Dialogue.Argv): Awaitable<void>
+    'dialogue/before-modify'(session: Dialogue.Session): Awaitable<void | string>
+    'dialogue/modify'(session: Dialogue.Session, dialogue: Dialogue): void
+    'dialogue/after-modify'(session: Dialogue.Session): void
+    'dialogue/before-detail'(session: Dialogue.Session): Awaitable<void>
   }
 }
 
@@ -19,254 +16,200 @@ declare module '.' {
       previewDelay?: number
       maxPreviews?: number
     }
+
+    interface Options {
+      target?: number[]
+    }
   }
 }
 
 export default function apply(ctx: Context) {
   ctx.command('teach')
-    .option('review', '-v')
-    .option('revert', '-V')
-    .option('includeLast', '-l [count]', { type: isIntegerOrInterval })
-    .option('excludeLast', '-L [count]', { type: isIntegerOrInterval })
-    .option('target', '<ids>', { type: RE_DIALOGUES })
-    .option('remove', '-r')
+    .option('action', '-r', { value: 'remove' })
 
-  ctx.on('dialogue/execute', (argv) => {
-    const { remove, revert, target } = argv.options
-    if (!target) return
-    argv.target = deduplicate(split(target))
-    delete argv.options.target
-    try {
-      return update(argv)
-    } catch (err) {
-      ctx.logger('teach').warn(err)
-      const operation = argv.session.text(`.operation.${revert ? 'revert' : remove ? 'remove' : 'modify'}`)
-      return argv.session.text('.unknown-error', [operation])
-    }
-  })
-
-  ctx.on('dialogue/execute', (argv) => {
-    const { options, session } = argv
-    const { includeLast, excludeLast } = options
-    if (!options.review && !options.revert) return
-    const now = Date.now(), includeTime = Time.parseTime(includeLast), excludeTime = Time.parseTime(excludeLast)
-    const dialogues = Object.values(ctx.dialogue.history).filter((dialogue) => {
-      if (dialogue._operator !== session.userId) return
-      const offset = now - dialogue._timestamp
-      if (includeTime && offset >= includeTime) return
-      if (excludeTime && offset < excludeTime) return
-      return true
-    }).sort((d1, d2) => d2._timestamp - d1._timestamp).filter((_, index, temp) => {
-      if (!includeTime && includeLast && index >= +includeLast) return
-      if (!excludeTime && excludeLast && index < temp.length - +excludeLast) return
-      return true
-    })
-
-    if (!dialogues.length) return session.text('.no-history')
-    return options.review ? review(dialogues, argv) : revert(dialogues, argv)
+  ctx.on('dialogue/action', (session) => {
+    const { options } = session.argv
+    if (!options.target) return
+    return analyze(session)
   }, true)
 
-  ctx.before('dialogue/detail', async (argv) => {
-    if (argv.options.modify) return
-    await argv.app.parallel('dialogue/search', argv, {}, argv.dialogues)
+  ctx.on('dialogue/action', (session) => {
+    return create(session)
   })
 
-  ctx.on('dialogue/detail-short', ({ _type, _timestamp }, output, { session }) => {
-    if (_type) {
-      output.unshift(`${session.text(`.operation.${_type}`)}-${Time.format(Date.now() - _timestamp)}`)
-    }
+  ctx.before('dialogue/detail', async (session) => {
+    const { action, dialogues } = session.argv.options
+    if (action === 'modify') return
+    await ctx.parallel('dialogue/search', session, {}, dialogues)
   })
 
-  ctx.on('dialogue/detail', ({ original, answer, flag, _type, _timestamp }, output, { session }) => {
+  ctx.on('dialogue/detail', ({ original, answer, flag }, output, session) => {
     const entity = session.text(`.entity.${flag & Dialogue.Flag.regexp ? 'regexp' : 'question'}`)
     output.push(session.text('.detail', [entity, original]))
     output.push(session.text('.detail', [session.text('.entity.answer'), answer]))
-    if (_type) {
-      output.push(session.text('.review', [
-        session.text(`.operation.${_type}`),
-        Date.now() - _timestamp,
-      ]))
-    }
   })
 }
 
-function isIntegerOrInterval(source: string) {
-  const n = +source
-  if (n * 0 === 0) {
-    if (isInteger(n) && n > 0) return n
-    throw new Error()
-  } else {
-    if (Time.parseTime(source)) return source
-    throw new Error()
-  }
-}
-
-function review(dialogues: Dialogue[], argv: Dialogue.Argv) {
-  const output = dialogues.map((dialogue) => {
-    return formatDialogue(argv, dialogue)
-  })
-  output.unshift(argv.session.text('.recent-history'))
-  return output.join('\n')
-}
-
-async function revert(dialogues: Dialogue[], argv: Dialogue.Argv) {
+export async function handleError(session: Dialogue.Session, callback: (session: Dialogue.Session) => Promise<string>) {
   try {
-    return await argv.app.dialogue.revert(dialogues, argv)
+    return await callback(session)
   } catch (err) {
-    argv.app.logger('teach').warn(err)
-    return argv.session.text('.unknown-error', [argv.session.text('.operation.revert')])
+    const { action } = session.argv.options
+    session.app.logger('dialogue').warn(err)
+    return session.text('.unknown-error', [session.text(`.operation.${action}`)])
   }
 }
 
-export async function update(argv: Dialogue.Argv) {
-  const { app, session, options, target, config, args } = argv
-  const { maxPreviews = 10, previewDelay = 500 } = config
-  const { revert, review, remove, search } = options
+export function prepareTargets(session: Dialogue.Session, dialogues?: Dialogue[]) {
+  const { options } = session.argv
+  dialogues ||= options.dialogues
+  const targets = dialogues.filter((dialogue) => {
+    return !session.app.bail('dialogue/permit', session, dialogue)
+  })
+  options.forbidden.unshift(...difference(dialogues, targets).map(d => d.id))
+  return targets.map(dialogue => observe(dialogue))
+}
 
-  options.modify = !review && !search && (Object.keys(options).length || args.length)
-  if (!options.modify && !search && target.length > maxPreviews) {
+function prepareModifyOptions(session: Dialogue.Session) {
+  const { options } = session.argv
+  options.forbidden = []
+  options.updated = []
+  options.skipped = []
+}
+
+export async function analyze(session: Dialogue.Session) {
+  const app = session.app
+  const { options, args } = session.argv
+  const { maxPreviews = 10, previewDelay = 500 } = app.dialogue.config
+  const { target, action } = options
+
+  if (!options.action && (Object.keys(options).length > 1 || args.length)) {
+    options.action = 'modify'
+  } else if (!options.action && target.length > maxPreviews) {
     return session.text('.max-previews', [maxPreviews])
   }
 
-  argv.uneditable = []
-  argv.updated = []
-  argv.skipped = []
-  const dialogues = argv.dialogues = revert || review
+  prepareModifyOptions(session)
+  const dialogues = options.dialogues = action === 'review' || action === 'revert'
     ? Object.values(pick(app.dialogue.history, target)).filter(Boolean)
     : await app.dialogue.get(target)
-  argv.dialogueMap = Object.fromEntries(dialogues.map(d => [d.id, { ...d }]))
+  options.dialogueMap = Object.fromEntries(dialogues.map(d => [d.id, { ...d }]))
 
-  if (search) {
-    return formatQuestionAnswers(argv, dialogues).join('\n')
-  }
+  const actualIds = options.dialogues.map(d => d.id)
+  options.unknown = difference(target, actualIds)
+  await app.serial('dialogue/before-detail', session)
 
-  const actualIds = argv.dialogues.map(d => d.id)
-  argv.unknown = difference(target, actualIds)
-  await app.serial('dialogue/before-detail', argv)
-
-  if (!options.modify) {
-    if (argv.unknown.length) {
-      await session.send(session.text(`.${review ? 'revert' : 'modify'}-unknown`, [argv.unknown.join(', ')]))
+  if (!options.action) {
+    if (options.unknown.length) {
+      await session.send(session.text(`.${options.action === 'review' ? 'revert' : 'modify'}-unknown`, [options.unknown.join(', ')]))
     }
     for (let index = 0; index < dialogues.length; index++) {
-      const type = argv.session.text(`.entity.${review ? 'history' : 'detail'}`)
-      const output = [argv.session.text('.detail-header', [dialogues[index].id, type])]
-      await app.serial('dialogue/detail', dialogues[index], output, argv)
+      const type = session.text(`.entity.${options.action === 'review' ? 'history' : 'detail'}`)
+      const output = [session.text('.detail-header', [dialogues[index].id, type])]
+      await app.serial('dialogue/detail', dialogues[index], output, session)
       if (index) await sleep(previewDelay)
       await session.send(output.join('\n'))
     }
     return ''
   }
 
-  const targets = prepareTargets(argv)
+  return handleError(session, async () => {
+    const targets = prepareTargets(session)
 
-  if (revert) {
-    const message = targets.length ? await argv.app.dialogue.revert(targets, argv) : ''
-    return sendResult(argv, message)
-  }
-
-  if (remove) {
-    let message = ''
-    if (targets.length) {
-      const editable = await argv.app.dialogue.remove(targets, argv)
-      message = argv.session.text('.remove-success', [editable.join(', ')])
+    if (action === 'revert') {
+      const message = targets.length ? await app.dialogue.revert(targets, session) : ''
+      return sendResult(session, message)
     }
-    await app.serial('dialogue/after-modify', argv)
-    return sendResult(argv, message)
-  }
 
-  if (targets.length) {
-    const result = await app.serial('dialogue/before-modify', argv)
-    if (typeof result === 'string') return result
-    for (const dialogue of targets) {
-      app.emit('dialogue/modify', argv, dialogue)
-    }
-    await argv.app.dialogue.update(targets, argv)
-    await app.serial('dialogue/after-modify', argv)
-  }
-
-  return sendResult(argv)
-}
-
-export async function create(argv: Dialogue.Argv) {
-  const { app, options, args: [question, answer] } = argv
-  options.create = options.modify = true
-
-  argv.unknown = []
-  argv.uneditable = []
-  argv.updated = []
-  argv.skipped = []
-  argv.dialogues = await app.dialogue.get({ question, answer, regexp: false })
-  await app.serial('dialogue/before-detail', argv)
-  const result = await app.serial('dialogue/before-modify', argv)
-  if (typeof result === 'string') return result
-
-  if (argv.dialogues.length) {
-    argv.target = argv.dialogues.map(d => d.id)
-    argv.dialogueMap = Object.fromEntries(argv.dialogues.map(d => [d.id, d]))
-    const targets = prepareTargets(argv)
-    if (options.remove) {
+    if (action === 'remove') {
       let message = ''
       if (targets.length) {
-        const editable = await argv.app.dialogue.remove(targets, argv)
-        message = argv.session.text('.remove-success', [editable.join(', ')])
+        const editable = await app.dialogue.remove(targets, session)
+        message = session.text('.remove-success', [editable.join(', ')])
       }
-      await app.serial('dialogue/after-modify', argv)
-      return sendResult(argv, message)
+      await app.serial('dialogue/after-modify', session)
+      return sendResult(session, message)
     }
+
+    if (targets.length) {
+      const result = await app.serial('dialogue/before-modify', session)
+      if (typeof result === 'string') return result
+      for (const dialogue of targets) {
+        app.emit('dialogue/modify', session, dialogue)
+      }
+      await app.dialogue.update(targets, session)
+      await app.serial('dialogue/after-modify', session)
+    }
+
+    return sendResult(session)
+  })
+}
+
+export async function create(session: Dialogue.Session) {
+  const { options, args: [question, answer] } = session.argv
+  const app = session.app
+  options.action = 'create'
+  options.unknown = []
+  prepareModifyOptions(session)
+  options.dialogues = await app.dialogue.get({ question, answer, regexp: false })
+  await app.serial('dialogue/before-detail', session)
+  const result = await app.serial('dialogue/before-modify', session)
+  if (typeof result === 'string') return result
+
+  if (options.dialogues.length) {
+    options.target = options.dialogues.map(d => d.id)
+    options.dialogueMap = Object.fromEntries(options.dialogues.map(d => [d.id, d]))
+    const targets = prepareTargets(session)
     for (const dialogue of targets) {
-      app.emit('dialogue/modify', argv, dialogue)
+      app.emit('dialogue/modify', session, dialogue)
     }
-    await argv.app.dialogue.update(targets, argv)
-    await app.serial('dialogue/after-modify', argv)
-    return sendResult(argv)
+    await app.dialogue.update(targets, session)
+    await app.serial('dialogue/after-modify', session)
+    return sendResult(session)
   }
 
   const dialogue = { flag: 0 } as Dialogue
-  if (app.bail('dialogue/permit', argv, dialogue)) {
-    return argv.session.text('.low-permission')
+  if (app.bail('dialogue/permit', session, dialogue)) {
+    return session.text('.low-permission')
   }
 
-  try {
-    app.emit('dialogue/modify', argv, dialogue)
+  return handleError(session, async () => {
+    app.emit('dialogue/modify', session, dialogue)
     const created = await app.database.create('dialogue', dialogue)
-    argv.app.dialogue.addHistory(dialogue, 'create', argv, false)
-    argv.dialogues = [created]
+    app.dialogue.addHistory(dialogue, 'create', session, false)
+    options.dialogues = [created]
 
-    await app.serial('dialogue/after-modify', argv)
-    return sendResult(argv, argv.session.text('.create-success', [argv.dialogues[0].id]))
-  } catch (err) {
-    await argv.session.send(argv.session.text('.unknown-error', [argv.session.text('.operation.create')]))
-    throw err
-  }
+    await app.serial('dialogue/after-modify', session)
+    return sendResult(session, session.text('.create-success', [options.dialogues[0].id]))
+  })
 }
 
-export function sendResult(argv: Dialogue.Argv, prefix?: string, suffix?: string) {
-  const { session, options, uneditable, unknown, skipped, updated, target, config } = argv
-  const { remove, revert, create } = options
+export function sendResult(session: Dialogue.Session, prolog?: string, epilog?: string) {
+  const { prefix } = session.app.dialogue.config
+  const { action, forbidden, unknown, skipped, updated, target } = session.argv.options
   const output = []
-  if (prefix) output.push(prefix)
+  if (prolog) output.push(prolog)
   if (updated.length) {
-    if (create) {
+    if (action === 'create') {
       output.push(session.text('.create-modified', [updated.join(', ')]))
     } else {
       output.push(session.text('.modify-success', [updated.join(', ')]))
     }
   }
   if (skipped.length) {
-    if (create) {
-      output.push(session.text('.create-unchanged', [target.join(', '), config.prefix + skipped.join(',')]))
+    if (action === 'create') {
+      output.push(session.text('.create-unchanged', [target.join(', '), prefix + skipped.join(',')]))
     } else {
       output.push(session.text('.unchanged', [skipped.join(', ')]))
     }
   }
-  if (uneditable.length) {
-    const operation = session.text('.operation.' + (revert ? 'revert' : remove ? 'remove' : 'modify'))
-    output.push(session.text('.permission-denied', [uneditable.join(', '), operation]))
+  if (forbidden.length) {
+    const operation = session.text('.operation.' + action)
+    output.push(session.text('.permission-denied', [forbidden.join(', '), operation]))
   }
   if (unknown.length) {
-    output.push(session.text(`.${revert ? 'revert' : 'modify'}-unknown`, [unknown.join(', ')]))
+    output.push(session.text(`.${action === 'revert' ? 'revert' : 'modify'}-unknown`, [unknown.join(', ')]))
   }
-  if (suffix) output.push(suffix)
+  if (epilog) output.push(epilog)
   return output.join('\n')
 }

@@ -1,4 +1,5 @@
-import { App, Awaitable, Context, Query, Schema, Session, Time } from 'koishi'
+import { Argv, Awaitable, Context, Query, Schema, Time } from 'koishi'
+import * as Koishi from 'koishi'
 
 // features
 import command from './command'
@@ -6,8 +7,7 @@ import receiver from './receiver'
 import search from './search'
 import service from './service'
 import update from './update'
-
-// options
+import review from './review'
 import internal from './internal'
 import probability from './probability'
 
@@ -17,15 +17,16 @@ export * from './receiver'
 export * from './search'
 export * from './service'
 export * from './update'
+export * from './review'
 export * from './probability'
 
 declare module 'koishi' {
   interface EventMap {
-    'dialogue/validate'(argv: Dialogue.Argv): void | string
-    'dialogue/execute'(argv: Dialogue.Argv): Awaitable<void | string>
-    'dialogue/permit'(argv: Dialogue.Argv, dialogue: Dialogue): boolean
-    'dialogue/flag'(flag: keyof typeof Dialogue.Flag): void
-    'dialogue/test'(test: DialogueTest, query: Query.Expr<Dialogue>): void
+    'dialogue/validate'(session: Dialogue.Session): void | string
+    'dialogue/action'(session: Dialogue.Session): Awaitable<void | string>
+    'dialogue/before-action'(session: Dialogue.Session): Awaitable<void | string>
+    'dialogue/permit'(session: Dialogue.Session, dialogue: Dialogue): boolean
+    'dialogue/query'(test: DialogueTest, query: Query.Expr<Dialogue>): void
   }
 
   interface Tables {
@@ -83,21 +84,21 @@ export namespace Dialogue {
     complement = 16,
   }
 
-  export interface Argv {
-    app: App
-    session: Session<'authority' | 'id'>
-    args: string[]
-    config: Config
-    target?: number[]
-    options: Record<string, any>
-
-    // modify status
-    dialogues?: Dialogue[]
-    dialogueMap?: Record<number, Dialogue>
+  export interface Options {
+    help?: boolean
+    original?: string
+    appellative?: boolean
+    action?: 'review' | 'revert' | 'remove' | 'create' | 'search' | 'modify'
     skipped?: number[]
     updated?: number[]
     unknown?: number[]
-    uneditable?: number[]
+    forbidden?: number[]
+    dialogues?: Dialogue[]
+    dialogueMap?: Record<number, Dialogue>
+  }
+
+  export interface Session extends Koishi.Session {
+    argv: Argv<never, never, string[], Dialogue.Options>
   }
 }
 
@@ -147,6 +148,7 @@ export function apply(ctx: Context, config: Config) {
   ctx.plugin(receiver, config)
   ctx.plugin(search, config)
   ctx.plugin(update, config)
+  ctx.plugin(review, config)
   ctx.plugin(internal, config)
   ctx.plugin(probability, config)
 }
