@@ -29,7 +29,7 @@
     "required:dialogue"
   ],
   "peerDependencies": {
-    "koishi": "^4.6.2",
+    "koishi": "^4.6.3",
     "koishi-plugin-dialogue": "^4.0.0"
   },
   "devDependencies": {
@@ -37,6 +37,6 @@
     "@koishijs/plugin-mock": "^1.0.4",
     "@sinonjs/fake-timers": "^6.0.1",
     "@types/sinonjs__fake-timers": "^6.0.4",
-    "koishi": "^4.6.2"
+    "koishi": "^4.6.3"
   }
 }

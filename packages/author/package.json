@@ -29,13 +29,13 @@
     "required:dialogue"
   ],
   "peerDependencies": {
-    "koishi": "^4.6.2",
+    "koishi": "^4.6.3",
     "koishi-plugin-dialogue": "^4.0.0"
   },
   "devDependencies": {
     "@koishijs/plugin-database-memory": "^1.2.0",
     "@koishijs/plugin-mock": "^1.0.4",
     "jest-mock": "^27.5.1",
-    "koishi": "^4.6.2"
+    "koishi": "^4.6.3"
   }
 }
