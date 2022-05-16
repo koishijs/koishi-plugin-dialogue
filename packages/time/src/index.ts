@@ -11,6 +11,13 @@ declare module 'koishi-plugin-dialogue' {
     startTime: number
     endTime: number
   }
+
+  namespace Dialogue {
+    interface Options {
+      startTime: string
+      endTime: string
+    }
+  }
 }
 
 export function isHours(value: string) {
@@ -26,6 +33,8 @@ export interface Config {}
 export const Config: Schema<Config> = Schema.object({})
 
 export const name = 'koishi-plugin-dialogue-time'
+
+export const using = ['database'] as const
 
 export function apply(ctx: Context, config: Config) {
   ctx.i18n.define('zh', require('./locales/zh'))
@@ -44,7 +53,8 @@ export function apply(ctx: Context, config: Config) {
     return +hours * 60 + +minutes
   }
 
-  ctx.before('dialogue/search', ({ options }, test) => {
+  ctx.before('dialogue/search', (session, test) => {
+    const { options } = session.argv
     if (options.startTime !== undefined) test.matchTime = parseTime(options.startTime)
     if (options.endTime !== undefined) test.mismatchTime = parseTime(options.endTime)
   })
@@ -54,16 +64,18 @@ export function apply(ctx: Context, config: Config) {
     state.test.matchTime = date.getHours() * 60 + date.getMinutes()
   })
 
-  ctx.on('dialogue/modify', async ({ options }, data) => {
+  ctx.on('dialogue/modify', async (session, data) => {
+    const { options } = session.argv
+
     if (options.startTime !== undefined) {
       data.startTime = parseTime(options.startTime)
-    } else if (options.create) {
+    } else if (options.action === 'create') {
       data.startTime = 0
     }
 
     if (options.endTime !== undefined) {
       data.endTime = parseTime(options.endTime)
-    } else if (options.create) {
+    } else if (options.action === 'create') {
       data.endTime = 0
     }
   })
@@ -74,7 +86,7 @@ export function apply(ctx: Context, config: Config) {
     return `${hours}:${minutes.toString().padStart(2, '0')}`
   }
 
-  ctx.on('dialogue/detail', (dialogue, output, { session }) => {
+  ctx.on('dialogue/detail', (dialogue, output, session) => {
     if (dialogue.startTime === dialogue.endTime) return
     output.push(`${session.text('.time.detail')}${formatTime(dialogue.startTime)}-${formatTime(dialogue.endTime)}`)
   })
