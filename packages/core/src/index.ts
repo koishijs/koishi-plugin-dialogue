@@ -136,7 +136,7 @@ export const schema: Schema<Config> = Schema.intersect([
   }).description('显示设置'),
 ])
 
-export const name = 'teach'
+export const name = 'dialogue'
 export const using = ['database'] as const
 
 export function apply(ctx: Context, config: Config) {

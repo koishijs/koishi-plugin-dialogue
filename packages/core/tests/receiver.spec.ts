@@ -1,4 +1,4 @@
-import { Assets, Logger, Random } from 'koishi'
+import { Random } from 'koishi'
 import { MessageClient } from '@koishijs/plugin-mock'
 import { install, InstalledClock } from '@sinonjs/fake-timers'
 import createEnvironment from '.'
@@ -24,9 +24,9 @@ describe('Teach Plugin - Appellative', () => {
     await u3g1.shouldReply('# koishi,foo bar', '问答已添加，编号为 1。')
     await u3g1.shouldNotReply('foo')
     // should strip spaces
-    await u3g1.shouldReply('koishi, foo', 'bar')
+    await u3g1.shouldReply('koishi, f o o', 'bar')
     // should strip punctuations
-    await u3g1.shouldReply('satori, foo?', 'bar')
+    await u3g1.shouldReply('satori, foo?!', 'bar')
     // TODO support at-trigger
     // await u3g1.shouldReply(`[CQ:at,id=${app.selfId}] foo`, 'bar')
     await u3g1.shouldReply('#1', '问答 1 的详细信息：\n问题：koishi,foo\n回答：bar\n触发权重：p=0, P=1')

@@ -1,4 +1,4 @@
-import { $, Awaitable, clone, Context, defineProperty, Observed, Query, segment, Service } from 'koishi'
+import { $, Awaitable, clone, Context, defineProperty, escapeRegExp, makeArray, Observed, Query, segment, Service } from 'koishi'
 // import { Dialogue, DialogueTest, equal } from './utils'
 import { Dialogue, DialogueTest } from '.'
 import { simplify } from 'simplify-chinese'
@@ -32,8 +32,13 @@ interface Question {
   activated: boolean
 }
 
+function createLeadingRE(patterns: string[], prefix = '', suffix = '') {
+  return patterns.length ? new RegExp(`^${prefix}(${patterns.map(escapeRegExp).join('|')})${suffix}`) : /$^/
+}
+
 export default class DialogueService extends Service {
   history: Record<number, Dialogue> = {}
+  nameRE: RegExp
 
   constructor(ctx: Context, public config: Dialogue.Config) {
     super(ctx, 'dialogue', true)
@@ -49,6 +54,8 @@ export default class DialogueService extends Service {
     }, {
       autoInc: true,
     })
+
+    this.nameRE = createLeadingRE(makeArray(ctx.app.options.nickname), '@?', '([,，]\\s*|\\s+|$)')
   }
 
   flag(flag: keyof typeof Dialogue.Flag) {
@@ -167,7 +174,7 @@ export default class DialogueService extends Service {
         return message
       },
     })
-    const capture = this.ctx.app._nameRE.exec(source)
+    const capture = this.nameRE.exec(source)
     const unprefixed = capture ? source.slice(capture[0].length) : source
     return {
       original,

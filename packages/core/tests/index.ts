@@ -1,8 +1,8 @@
 import { App } from 'koishi'
-import * as teach from '../src'
+import * as dialogue from 'koishi-plugin-dialogue'
 import mock from '@koishijs/plugin-mock'
 
-export default function (config: teach.Config = {}) {
+export default function (config: dialogue.Config = {}) {
   const app = new App({
     nickname: ['koishi', 'satori'],
   })
@@ -22,7 +22,7 @@ export default function (config: teach.Config = {}) {
   const u4g1 = app.mock.client(u4id, g1id)
   const u4g2 = app.mock.client(u4id, g2id)
 
-  app.plugin(teach, {
+  app.plugin(dialogue, {
     historyTimeout: 0,
     ...config,
   })

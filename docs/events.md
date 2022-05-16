@@ -10,6 +10,20 @@ sidebarDepth: 2
 
 ### dialogue/before-execute
 
+## 触发相关
+
+### dialogue/before-search
+
+### dialogue/receive
+
+### dialogue/query
+
+- **test:** `DialogueTest` 条件对象
+- **query:** `Query` 查询对象
+- **触发方式:** emit
+
+将条件信息转化为 minato 可用的查询对象。
+
 ## 显示相关
 
 ### dialogue/abstract
@@ -23,10 +37,19 @@ sidebarDepth: 2
 
 ### dialogue/detail
 
+- **dialogue:** `Dialogue` 问答对象
+- **output:** `string[]` 细节信息
+- **session:** `Session` 会话对象
+- **触发方式:** emit
+
+渲染问答的细节信息。
+
 ### dialogue/appendix
 
 ## 操作相关
 
 ### dialogue/permit
+
+### dialogue/modify
 
 ### dialogue/after-modify
