@@ -27,7 +27,7 @@ export const Config: Schema<Config> = Schema.object({})
 
 export const name = 'koishi-plugin-dialogue-console'
 
-export const using = ['console.meta', 'console.stats'] as const
+export const using = ['dialogue', 'console.meta', 'console.stats'] as const
 
 export function apply(ctx: Context, config: Config) {
   const { stats, meta } = ctx.console

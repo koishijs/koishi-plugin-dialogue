@@ -25,9 +25,15 @@
     "plugin",
     "teach",
     "dialogue",
-    "conversation",
-    "required:dialogue"
+    "conversation"
   ],
+  "koishi": {
+    "service": {
+      "required": [
+        "dialogue"
+      ]
+    }
+  },
   "peerDependencies": {
     "koishi": "^4.7.0",
     "koishi-plugin-dialogue": "^4.0.0"

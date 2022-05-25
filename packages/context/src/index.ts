@@ -11,6 +11,14 @@ declare module 'koishi-plugin-dialogue' {
   interface Dialogue {
     guilds: string[]
   }
+
+  namespace Dialogue {
+    interface Options {
+      partial?: boolean
+      reversed?: boolean
+      _guilds?: string[]
+    }
+  }
 }
 
 export const RE_GROUPS = /^\d+(,\d+)*$/
@@ -24,6 +32,8 @@ export const Config: Schema<Config> = Schema.object({
 })
 
 export const name = 'koishi-plugin-dialogue-context'
+
+export const using = ['dialogue'] as const
 
 export function apply(ctx: Context, config: Config) {
   const { authority } = config
@@ -90,8 +100,8 @@ export function apply(ctx: Context, config: Config) {
       }
     })
 
-  ctx.on('dialogue/modify', ({ options }, data) => {
-    const { _guilds, partial, reversed } = options
+  ctx.on('dialogue/modify', (session, data) => {
+    const { _guilds, partial, reversed } = session.argv.options
     if (!_guilds) return
     if (!data.guilds) data.guilds = []
     if (partial) {
@@ -109,13 +119,14 @@ export function apply(ctx: Context, config: Config) {
     }
   })
 
-  ctx.before('dialogue/search', ({ options }, test) => {
+  ctx.before('dialogue/search', (session, test) => {
+    const { options } = session.argv
     test.partial = options.partial
     test.reversed = options.reversed
     test.guilds = options._guilds
   })
 
-  ctx.on('dialogue/detail', ({ guilds, flag }, output, { session }) => {
+  ctx.on('dialogue/detail', ({ guilds, flag }, output, session) => {
     const includeCurrentGuild = session.subtype === 'group' && guilds.includes(session.gid)
     const prefix = flag & Dialogue.Flag.complement ? 'enable-' : 'disable-'
     const path = includeCurrentGuild
@@ -124,7 +135,8 @@ export function apply(ctx: Context, config: Config) {
     output.push(session.text('.context.' + prefix + path, [guilds.length]))
   })
 
-  ctx.on('dialogue/abstract', ({ guilds, flag }, output, { session, options }) => {
+  ctx.on('dialogue/abstract', ({ guilds, flag }, output, session) => {
+    const { options } = session.argv
     if (!options._guilds && session.subtype === 'group') {
       const isReversed = flag & Dialogue.Flag.complement
       const hasGroup = guilds.includes(session.gid)

@@ -25,10 +25,16 @@
     "plugin",
     "teach",
     "dialogue",
-    "conversation",
-    "required:console",
-    "required:dialogue"
+    "conversation"
   ],
+  "koishi": {
+    "service": {
+      "required": [
+        "console",
+        "dialogue"
+      ]
+    }
+  },
   "peerDependencies": {
     "@koishijs/plugin-console": "^3.2.10",
     "@koishijs/plugin-status": "^5.3.6",

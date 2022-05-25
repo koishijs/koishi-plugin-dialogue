@@ -29,11 +29,21 @@
     "plugin",
     "teach",
     "dialogue",
-    "conversation",
-    "required:database",
-    "optional:assets",
-    "impl:dialogue"
+    "conversation"
   ],
+  "koishi": {
+    "service": {
+      "required": [
+        "database"
+      ],
+      "optional": [
+        "assets"
+      ],
+      "implements": [
+        "dialogue"
+      ]
+    }
+  },
   "peerDependencies": {
     "koishi": "^4.7.0"
   },

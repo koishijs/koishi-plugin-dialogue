@@ -1,6 +1,7 @@
 import createEnvironment from 'koishi-plugin-dialogue/tests'
 import * as jest from 'jest-mock'
 import * as author from '../src'
+import { Bot } from 'koishi'
 
 const DETAIL_HEAD_QES = '问答 1 的详细信息：\n问题：foo\n'
 const DETAIL_HEAD = DETAIL_HEAD_QES + '回答：bar\n'
@@ -33,7 +34,7 @@ describe('Teach Plugin - Writer', () => {
 
     // 实在找不到名字就只显示未知用户
     await u4g2.shouldReply('#1', DETAIL_HEAD + '来源：未知用户')
-    const getGuildMemberMap = app.bots[0].getGuildMemberMap = jest.fn()
+    const getGuildMemberMap = app.bots[0].getGuildMemberMap = jest.fn<Bot['getGuildMemberMap']>()
     getGuildMemberMap.mockReturnValue(Promise.resolve({ 200: 'mock2' }))
     await u4g2.shouldReply('#1', DETAIL_HEAD + '来源：mock2')
     getGuildMemberMap.mockRestore()

@@ -1,4 +1,4 @@
-import { contain, Context, Dict, difference, Query, union } from 'koishi'
+import { contain, Context, defineProperty, Dict, difference, Query, union } from 'koishi'
 import { Dialogue, equal, prepareTargets, RE_DIALOGUES, split } from 'koishi-plugin-dialogue'
 
 declare module 'koishi-plugin-dialogue/lib/receiver' {
@@ -26,16 +26,20 @@ declare module 'koishi-plugin-dialogue' {
       successorTimeout?: number
     }
 
-    interface Argv {
+    interface Options {
       predecessors?: number[]
       successors?: number[]
       predOverwrite?: boolean
       succOverwrite?: boolean
+      createSuccessor?: string
+      successorTimeout?: number
     }
   }
 }
 
 export const name = 'koishi-plugin-dialogue-flow'
+
+export const using = ['dialogue'] as const
 
 export function apply(ctx: Context, config: Dialogue.Config) {
   ctx.i18n.define('zh', require('./locales/zh'))
@@ -63,35 +67,36 @@ export function apply(ctx: Context, config: Dialogue.Config) {
         if ('addPred' in options) {
           return session.text('.options-conflict', ['--set-pred, --add-pred'])
         } else {
-          argv.predecessors = split(options.setPred)
-          argv.predOverwrite = true
+          defineProperty(options, 'predecessors', split(options.setPred))
+          defineProperty(options, 'predOverwrite', true)
         }
       } else if ('addPred' in options) {
-        argv.predecessors = split(options.addPred)
-        argv.predOverwrite = false
+        defineProperty(options, 'predecessors', split(options.addPred))
+        defineProperty(options, 'predOverwrite', false)
       }
 
       if ('setSucc' in options) {
         if ('addSucc' in options) {
           return session.text('.options-conflict', ['--set-succ, --add-succ'])
         } else {
-          argv.successors = split(options.setSucc)
-          argv.succOverwrite = true
+          defineProperty(options, 'successors', split(options.setSucc))
+          defineProperty(options, 'succOverwrite', true)
         }
       } else if ('addSucc' in options) {
-        argv.successors = split(options.addSucc)
-        argv.succOverwrite = false
+        defineProperty(options, 'successors', split(options.addSucc))
+        defineProperty(options, 'succOverwrite', false)
       }
 
-      if (options.remove) {
-        argv.successors = []
-        argv.succOverwrite = true
+      if (options['action'] === 'remove') {
+        defineProperty(options, 'successors', [])
+        defineProperty(options, 'succOverwrite', true)
       }
     })
 
-  ctx.emit('dialogue/flag', 'context')
+  ctx.dialogue.flag('context')
 
-  ctx.on('dialogue/modify', ({ predOverwrite, predecessors }, data) => {
+  ctx.on('dialogue/modify', (session, data) => {
+    const { predOverwrite, predecessors } = session.argv.options
     // merge predecessors
     if (!data.predecessors) data.predecessors = []
     if (!predecessors) return
@@ -102,21 +107,22 @@ export function apply(ctx: Context, config: Dialogue.Config) {
     }
   })
 
-  ctx.on('dialogue/modify', ({ options }, data) => {
+  ctx.on('dialogue/modify', (session, data) => {
+    const { options } = session.argv
     // set successor timeout
     if (options.successorTimeout) {
       data.successorTimeout = options.successorTimeout * 1000
     }
   })
 
-  ctx.on('dialogue/after-modify', async (argv) => {
+  ctx.on('dialogue/after-modify', async (session) => {
     // modify successors
-    const { succOverwrite, successors, dialogues } = argv
+    const { succOverwrite, successors, dialogues } = session.argv.options
     if (!successors) return
     const predecessors = dialogues.map(dialogue => '' + dialogue.id)
     const successorDialogues = await ctx.dialogue.get(successors)
     const newTargets = successorDialogues.map(d => d.id)
-    argv.unknown = difference(successors, newTargets)
+    session.argv.options.unknown = difference(successors, newTargets)
 
     if (succOverwrite) {
       for (const dialogue of await ctx.dialogue.get({ predecessors })) {
@@ -127,7 +133,7 @@ export function apply(ctx: Context, config: Dialogue.Config) {
       }
     }
 
-    const targets = prepareTargets(argv, successorDialogues)
+    const targets = prepareTargets(session, successorDialogues)
 
     for (const data of targets) {
       if (!successors.includes(data.id)) {
@@ -137,10 +143,11 @@ export function apply(ctx: Context, config: Dialogue.Config) {
       }
     }
 
-    await ctx.dialogue.update(targets, argv)
+    await ctx.dialogue.update(targets, session)
   })
 
-  ctx.on('dialogue/after-modify', async ({ options: { createSuccessor }, dialogues, session }) => {
+  ctx.on('dialogue/after-modify', async (session) => {
+    const { createSuccessor, dialogues } = session.argv.options
     // create a new dialogue with > # and set the current dialogue as its predecessor
     if (!createSuccessor) return
     if (!dialogues.length) return session.send(session.text('.flowgraph.not-found'))
@@ -152,8 +159,9 @@ export function apply(ctx: Context, config: Dialogue.Config) {
   })
 
   // get predecessors
-  ctx.before('dialogue/detail', async ({ options, dialogues }) => {
-    if (options.modify) return
+  ctx.before('dialogue/detail', async (session) => {
+    const { action, dialogues } = session.argv.options
+    if (action === 'modify') return
     const predecessors = new Set<number>()
     for (const dialogue of dialogues) {
       for (const id of dialogue.predecessors) {
@@ -170,22 +178,22 @@ export function apply(ctx: Context, config: Dialogue.Config) {
     }
   })
 
-  ctx.on('dialogue/detail', async (dialogue, output, argv) => {
+  ctx.on('dialogue/detail', async (dialogue, output, session) => {
     if (dialogue.flag & Dialogue.Flag.context) {
-      output.push(argv.session.text('.flowgraph.detail.context-mode'))
+      output.push(session.text('.flowgraph.detail.context-mode'))
     }
     if ((dialogue.successorTimeout || successorTimeout) !== successorTimeout) {
-      output.push(argv.session.text('.flowgraph.detail.timeout', dialogue))
+      output.push(session.text('.flowgraph.detail.timeout', dialogue))
     }
     if (dialogue._predecessors.length) {
-      output.push(argv.session.text('.flowgraph.detail.predecessors'), ...argv.app.dialogue.list(argv, dialogue._predecessors))
+      output.push(session.text('.flowgraph.detail.predecessors'), ...ctx.dialogue.list(session, dialogue._predecessors))
     }
     if (dialogue._successors.length) {
-      output.push(argv.session.text('.flowgraph.detail.successors'), ...argv.app.dialogue.list(argv, dialogue._successors))
+      output.push(session.text('.flowgraph.detail.successors'), ...ctx.dialogue.list(session, dialogue._successors))
     }
   })
 
-  ctx.on('dialogue/abstract', (dialogue, output, { session }) => {
+  ctx.on('dialogue/abstract', (dialogue, output, session) => {
     if ((dialogue.successorTimeout || successorTimeout) !== successorTimeout) {
       output.push(`z=${dialogue.successorTimeout / 1000}`)
     }
@@ -197,8 +205,9 @@ export function apply(ctx: Context, config: Dialogue.Config) {
     }
   })
 
-  ctx.on('dialogue/search', async (argv, test, dialogues) => {
-    const dMap = argv.dialogueMap || (argv.dialogueMap = {})
+  ctx.on('dialogue/search', async (session, test, dialogues) => {
+    const { options } = session.argv
+    const dMap = options.dialogueMap || (options.dialogueMap = {})
     const predecessors = dialogues.filter((dialogue) => {
       if (dialogue._successors) return
       dMap[dialogue.id] = dialogue
@@ -221,7 +230,7 @@ export function apply(ctx: Context, config: Dialogue.Config) {
       }
     }
 
-    await argv.app.parallel('dialogue/search', argv, test, successors)
+    await ctx.parallel('dialogue/search', session, test, successors)
   })
 
   ctx.on('dialogue/appendix', ({ _successors }, output, prefix, argv) => {

@@ -13,7 +13,7 @@ declare module 'koishi-plugin-dialogue' {
   }
 
   namespace Dialogue {
-    interface Argv {
+    interface Options {
       writer?: string
       nameMap?: Dict<string>
       /**
@@ -21,6 +21,7 @@ declare module 'koishi-plugin-dialogue' {
        * all writers of the target dialogues list plus the -w option
        */
       authMap?: Dict<number>
+      substitute?: boolean
     }
   }
 }
@@ -41,6 +42,8 @@ export const Config: Schema<Config> = Schema.object({
 
 export const name = 'koishi-plugin-dialogue-author'
 
+export const using = ['dialogue'] as const
+
 export function apply(ctx: Context, config: Config) {
   const { authority } = config
 
@@ -58,33 +61,34 @@ export function apply(ctx: Context, config: Config) {
     .option('substitute', '-s')
     .option('substitute', '-S, --no-substitute', { value: false })
 
-  ctx.emit('dialogue/flag', 'frozen')
-  ctx.emit('dialogue/flag', 'substitute')
+  ctx.dialogue.flag('frozen')
+  ctx.dialogue.flag('substitute')
 
-  ctx.before('dialogue/detail', async (argv) => {
-    argv.nameMap = {}
-    argv.authMap = {}
-    const { options, nameMap, session, dialogues, authMap } = argv
+  ctx.before('dialogue/detail', async (session) => {
+    const { options } = session.argv
+    options.nameMap = {}
+    options.authMap = {}
+    const { nameMap, dialogues, authMap } = options
     const writers = new Set(dialogues.map(d => d.writer).filter(Boolean))
     const fields: User.Field[] = ['id', 'authority', session.platform as never]
     if (options.writer === '') {
-      argv.writer = ''
+      options.writer = ''
     } else if (options.writer) {
       const [platform, userId] = options.writer.split(':')
       const user = await ctx.database.getUser(platform, userId, fields)
       if (user) {
         writers.add(user.id)
-        argv.writer = user.id
+        options.writer = user.id
       }
     }
-    if (!options.modify) fields.push('name')
+    if (options.action !== 'modify') fields.push('name')
     const users = await ctx.database.getUser('id', [...writers], fields)
 
     let hasUnnamed = false
     const idMap: Dict<string> = {}
     for (const user of users) {
       authMap[user.id] = user.authority
-      if (options.modify) continue
+      if (options.action === 'modify') continue
       const userId = user[session.platform]
       if (user.name) {
         nameMap[user.id] = `${user.name} (${userId})`
@@ -96,7 +100,7 @@ export function apply(ctx: Context, config: Config) {
       }
     }
 
-    if (!options.modify && hasUnnamed && session.subtype === 'group') {
+    if (options.action !== 'modify' && hasUnnamed && session.subtype === 'group') {
       try {
         const memberMap = await session.bot.getGuildMemberMap(session.guildId)
         for (const userId in memberMap) {
@@ -106,11 +110,12 @@ export function apply(ctx: Context, config: Config) {
     }
   })
 
-  ctx.on('dialogue/detail', ({ writer, flag }, output, { session, nameMap }) => {
+  ctx.on('dialogue/detail', ({ writer, flag }, output, session) => {
     if (flag & Dialogue.Flag.frozen) {
       output.push(session.text('.writer.detail.frozen'))
     }
     if (writer) {
+      const { nameMap } = session.argv.options
       const name = nameMap[writer] || session.text('.writer.detail.unknown')
       output.push(session.text('.writer.detail.writer', [name]))
       if (flag & Dialogue.Flag.substitute) {
@@ -126,9 +131,9 @@ export function apply(ctx: Context, config: Config) {
   //    a higher authority than the original writer is required
   // 3. when using -w, the original writer authority should be higher than the target user
   // 4. frozen dialogues require `frozen` authority to modify
-  ctx.on('dialogue/permit', ({ session, target, options, authMap }, { writer, flag }) => {
-    const { substitute, writer: newWriter } = options
-    const { id, authority } = session.user
+  ctx.on('dialogue/permit', (session, { writer, flag }) => {
+    const { target, substitute, writer: newWriter, authMap } = session.argv.options
+    const { id, authority } = session.user as User.Observed
     /* eslint-disable operator-linebreak */
     return (
       (newWriter && authority <= authMap[newWriter] && newWriter !== id) ||
@@ -152,11 +157,12 @@ export function apply(ctx: Context, config: Config) {
     }
   })
 
-  ctx.before('dialogue/search', ({ writer }, test) => {
-    test.writer = writer
+  ctx.before('dialogue/search', (session, test) => {
+    test.writer = session.argv.options.writer
   })
 
-  ctx.before('dialogue/modify', async ({ writer, options, session }) => {
+  ctx.before('dialogue/modify', async (session) => {
+    const { writer } = session.argv.options
     if (options.writer && typeof writer === 'undefined') {
       return session.text('.writer.target-not-exist')
     }
