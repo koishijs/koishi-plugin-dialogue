@@ -28,6 +28,7 @@ jobs:
       - name: Trigger Docs
         uses: benc-uk/workflow-dispatch@v1
         with:
-          workflow: Build
-          repo: koishijs/koishi
+          ref: docs
+          workflow: Deploy
+          repo: koishijs/koishijs.github.io
           token: ${{ secrets.WORKFLOW_TOKEN }}

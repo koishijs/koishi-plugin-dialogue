@@ -115,9 +115,10 @@ export class MessageBuffer {
   private async _flush(message: string, delay?: number) {
     this.original = true
     message = message.trim()
-    await this.sendQueued(message, delay)
+    const result = await this.sendQueued(message, delay)
     this.buffer = ''
     this.original = false
+    return result
   }
 
   flush() {

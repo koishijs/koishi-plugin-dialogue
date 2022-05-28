@@ -38,13 +38,13 @@
   "peerDependencies": {
     "@koishijs/plugin-console": "^3.2.10",
     "@koishijs/plugin-status": "^5.3.6",
-    "koishi": "^4.6.3",
+    "koishi": "^4.7.2",
     "koishi-plugin-dialogue": "^4.0.0"
   },
   "devDependencies": {
     "@koishijs/client": "^3.2.10",
     "@koishijs/plugin-console": "^3.2.10",
     "@koishijs/plugin-status": "^5.3.6",
-    "koishi": "^4.6.3"
+    "koishi": "^4.7.2"
   }
 }

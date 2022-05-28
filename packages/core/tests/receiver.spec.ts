@@ -63,7 +63,9 @@ describe('Teach Plugin - Interpolate', () => {
     it(title, async () => {
       const { app, u3g1, start, stop } = createEnvironment({})
       app.command('bar').action(() => 'hello')
-      app.command('baz').action(({ session }) => session.sendQueued('hello'))
+      app.command('baz').action(async ({ session }) => {
+        await session.sendQueued('hello')
+      })
       app.command('report [text]').action(async ({ session }, text) => {
         await session.sendQueued(text)
         await session.sendQueued('end')

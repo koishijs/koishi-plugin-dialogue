@@ -27,14 +27,16 @@ describe('Time', () => {
       advanceTimeDelta: 5,
     })
 
-    await u3g1.shouldReply('foo', 'bar')
-    clock.tick(8 * Time.hour) // 20:00
-    await u3g1.shouldNotReply('foo')
-    clock.tick(8 * Time.hour) // 4:00
-    await u3g1.shouldNotReply('foo')
-    clock.tick(8 * Time.hour) // 12:00
-    await u3g1.shouldReply('foo', 'bar')
-
-    clock.uninstall()
+    try {
+      await u3g1.shouldReply('foo', 'bar')
+      clock.tick(8 * Time.hour) // 20:00
+      await u3g1.shouldNotReply('foo')
+      clock.tick(8 * Time.hour) // 4:00
+      await u3g1.shouldNotReply('foo')
+      clock.tick(8 * Time.hour) // 12:00
+      await u3g1.shouldReply('foo', 'bar')
+    } finally {
+      clock.uninstall()
+    }
   })
 })
