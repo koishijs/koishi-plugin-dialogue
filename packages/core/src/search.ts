@@ -4,7 +4,7 @@ import { getTotalWeight } from './receiver'
 import { formatAnswers, formatPrefix } from './service'
 
 declare module 'koishi' {
-  interface EventMap {
+  interface Events {
     'dialogue/before-search'(argv: Dialogue.Session, test: DialogueTest): void | boolean
     'dialogue/search'(argv: Dialogue.Session, test: DialogueTest, dialogue: Dialogue[]): Promise<void>
   }

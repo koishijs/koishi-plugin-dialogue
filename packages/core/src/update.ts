@@ -2,7 +2,7 @@ import { Awaitable, Context, difference, observe, pick, sleep } from 'koishi'
 import { Dialogue } from '.'
 
 declare module 'koishi' {
-  interface EventMap {
+  interface Events {
     'dialogue/before-modify'(session: Dialogue.Session): Awaitable<void | string>
     'dialogue/modify'(session: Dialogue.Session, dialogue: Dialogue): void
     'dialogue/after-modify'(session: Dialogue.Session): void

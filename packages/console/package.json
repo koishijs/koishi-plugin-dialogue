@@ -8,7 +8,7 @@
     "lib"
   ],
   "author": "Shigma <shigma10826@gmail.com>",
-  "license": "MIT",
+  "license": "AGPL-3.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/koishijs/koishi-plugin-dialogue.git",
@@ -36,15 +36,13 @@
     }
   },
   "peerDependencies": {
-    "@koishijs/plugin-console": "^3.2.10",
-    "@koishijs/plugin-status": "^5.3.6",
-    "koishi": "^4.7.2",
+    "@koishijs/plugin-console": "^4.3.1",
+    "koishi": "^4.8.3",
     "koishi-plugin-dialogue": "^4.0.0"
   },
   "devDependencies": {
-    "@koishijs/client": "^3.2.10",
-    "@koishijs/plugin-console": "^3.2.10",
-    "@koishijs/plugin-status": "^5.3.6",
-    "koishi": "^4.7.2"
+    "@koishijs/client": "^4.3.1",
+    "@koishijs/plugin-console": "^4.3.1",
+    "koishi": "^4.8.3"
   }
 }

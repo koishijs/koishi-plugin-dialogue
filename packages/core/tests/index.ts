@@ -1,5 +1,6 @@
 import { App } from 'koishi'
 import * as dialogue from 'koishi-plugin-dialogue'
+import memory from '@koishijs/plugin-database-memory'
 import mock from '@koishijs/plugin-mock'
 
 export default function (config: dialogue.Config = {}) {
@@ -8,7 +9,7 @@ export default function (config: dialogue.Config = {}) {
   })
 
   app.plugin(mock)
-  app.plugin('database-memory')
+  app.plugin(memory)
 
   const u2id = '200', u3id = '300', u4id = '400'
   const g1id = '100', g2id = '200'

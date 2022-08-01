@@ -2,11 +2,11 @@ import { Argv, Awaitable, Channel, Context, Next, noop, Random, segment, Session
 import { Dialogue, DialogueTest } from '.'
 
 declare module 'koishi' {
-  interface App {
+  interface Context {
     _dialogueStates: Record<number, SessionState>
   }
 
-  interface EventMap {
+  interface Events {
     'dialogue/state'(state: SessionState): void
     'dialogue/receive'(state: SessionState): void | boolean
     'dialogue/prepare'(state: SessionState): void

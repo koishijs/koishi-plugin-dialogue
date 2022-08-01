@@ -21,7 +21,7 @@ export * from './review'
 export * from './probability'
 
 declare module 'koishi' {
-  interface EventMap {
+  interface Events {
     'dialogue/validate'(session: Dialogue.Session): void | string
     'dialogue/action'(session: Dialogue.Session): Awaitable<void | string>
     'dialogue/before-action'(session: Dialogue.Session): Awaitable<void | string>

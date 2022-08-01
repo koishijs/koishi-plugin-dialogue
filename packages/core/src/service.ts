@@ -4,13 +4,11 @@ import { Dialogue, DialogueTest } from '.'
 import { simplify } from 'simplify-chinese'
 
 declare module 'koishi' {
-  namespace Context {
-    interface Services {
-      dialogue: DialogueService
-    }
+  interface Context {
+    dialogue: DialogueService
   }
 
-  interface EventMap {
+  interface Events {
     'dialogue/abstract'(dialogue: Dialogue, output: Abstract, session: Dialogue.Session): void
     'dialogue/appendix'(dialogue: Dialogue, output: string[], prefix: string, argv: Dialogue.Session): void
     'dialogue/detail'(dialogue: Dialogue, output: string[], session: Dialogue.Session): Awaitable<void>
