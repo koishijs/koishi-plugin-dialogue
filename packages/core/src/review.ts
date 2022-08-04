@@ -52,12 +52,12 @@ export default function apply(ctx: Context) {
     output.unshift(`${session.text(`.operation.${_type}`)}-${Time.format(Date.now() - _timestamp)}`)
   })
 
-  ctx.on('dialogue/detail', ({ _type, _timestamp }, output, session) => {
+  ctx.on('dialogue/detail', ({ _type, _timestamp }, detail, session) => {
     if (!_type) return
-    output.push(session.text('.review', [
+    detail.add(session.text('.review', [
       session.text(`.operation.${_type}`),
       Date.now() - _timestamp,
-    ]))
+    ]), -100)
   })
 }
 

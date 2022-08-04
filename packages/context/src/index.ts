@@ -126,13 +126,13 @@ export function apply(ctx: Context, config: Config) {
     test.guilds = options._guilds
   })
 
-  ctx.on('dialogue/detail', ({ guilds, flag }, output, session) => {
+  ctx.on('dialogue/detail', ({ guilds, flag }, detail, session) => {
     const includeCurrentGuild = session.subtype === 'group' && guilds.includes(session.gid)
     const prefix = flag & Dialogue.Flag.complement ? 'enable-' : 'disable-'
     const path = includeCurrentGuild
       ? 'except-current-' + (guilds.length - 1 ? 'and-more' : 'only')
       : guilds.length ? 'except-some' : 'all'
-    output.push(session.text('.context.' + prefix + path, [guilds.length]))
+    detail.add(session.text('.context.' + prefix + path, [guilds.length]), 500)
   })
 
   ctx.on('dialogue/abstract', ({ guilds, flag }, output, session) => {

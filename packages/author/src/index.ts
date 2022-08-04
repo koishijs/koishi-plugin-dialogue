@@ -110,16 +110,16 @@ export function apply(ctx: Context, config: Config) {
     }
   })
 
-  ctx.on('dialogue/detail', ({ writer, flag }, output, session) => {
+  ctx.on('dialogue/detail', ({ writer, flag }, detail, session) => {
     if (flag & Dialogue.Flag.frozen) {
-      output.push(session.text('.writer.detail.frozen'))
+      detail.add(session.text('.writer.detail.frozen'), 100)
     }
     if (writer) {
       const { nameMap } = session.argv.options
       const name = nameMap[writer] || session.text('.writer.detail.unknown')
-      output.push(session.text('.writer.detail.writer', [name]))
+      detail.add(session.text('.writer.detail.writer', [name]), 100)
       if (flag & Dialogue.Flag.substitute) {
-        output.push(session.text('.writer.detail.substitute'))
+        detail.add(session.text('.writer.detail.substitute'), 100)
       }
     }
   })
@@ -148,7 +148,7 @@ export function apply(ctx: Context, config: Config) {
     /* eslint-enable operator-linebreak */
   })
 
-  ctx.on('dialogue/abstract', ({ flag }, output, { session }) => {
+  ctx.on('dialogue/abstract', ({ flag }, output, session) => {
     if (flag & Dialogue.Flag.frozen) {
       output.push(session.text('.writer.abstract.frozen'))
     }
@@ -168,11 +168,12 @@ export function apply(ctx: Context, config: Config) {
     }
   })
 
-  ctx.on('dialogue/modify', ({ writer, session, target }, data) => {
+  ctx.on('dialogue/modify', (session, data) => {
+    const { target, writer } = session.argv.options
     if (typeof writer !== 'undefined') {
       data.writer = writer
     } else if (!target) {
-      data.writer = session.user.id
+      data.writer = session.user['id']
     }
   })
 

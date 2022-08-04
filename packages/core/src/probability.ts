@@ -95,9 +95,11 @@ export default function probability(ctx: Context, config: Dialogue.Config) {
     }, appellationTimeout)
   })
 
-  ctx.on('dialogue/detail', (dialogue, output, session) => {
+  ctx.on('dialogue/detail', (dialogue, detail, session) => {
     const { probS, probA } = dialogue
-    if (probS < 1 || probA > 0) output.push(session.text('.probability.detail', dialogue))
+    if (probS < 1 || probA > 0) {
+      detail.add(session.text('.probability.detail', dialogue), 900)
+    }
   })
 
   ctx.on('dialogue/abstract', ({ probS, probA }, output) => {

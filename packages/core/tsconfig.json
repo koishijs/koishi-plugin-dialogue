@@ -1,7 +1,7 @@
 {
   "extends": "../../tsconfig.base",
   "compilerOptions": {
-    "outDir": "lib",
+    "outFile": "lib/index.d.ts",
     "rootDir": "src",
   },
   "include": [

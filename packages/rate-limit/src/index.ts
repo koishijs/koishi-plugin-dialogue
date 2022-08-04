@@ -1,7 +1,7 @@
 import { Context, makeArray, Schema } from 'koishi'
 import {} from 'koishi-plugin-dialogue'
 
-declare module 'koishi-plugin-dialogue/lib/receiver' {
+declare module 'koishi-plugin-dialogue' {
   interface SessionState {
     counters?: Record<number, number>
     initiators?: string[]

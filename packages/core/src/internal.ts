@@ -141,9 +141,12 @@ export default function apply(ctx: Context, config: Dialogue.Config) {
     }
   })
 
-  ctx.on('dialogue/detail', async (dialogue, output, session) => {
+  ctx.on('dialogue/detail', async (dialogue, detail, session) => {
     if (dialogue._redirections?.length) {
-      output.push(session.text('.redirections'), ...ctx.dialogue.list(session, dialogue._redirections))
+      detail.add([
+        session.text('.redirections'),
+        ...ctx.dialogue.list(session, dialogue._redirections),
+      ].join('\n'), -1000)
     }
   })
 

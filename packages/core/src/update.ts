@@ -7,6 +7,7 @@ declare module 'koishi' {
     'dialogue/modify'(session: Dialogue.Session, dialogue: Dialogue): void
     'dialogue/after-modify'(session: Dialogue.Session): void
     'dialogue/before-detail'(session: Dialogue.Session): Awaitable<void>
+    'dialogue/detail'(dialogue: Dialogue, detail: Detail, session: Dialogue.Session): void
   }
 }
 
@@ -20,6 +21,24 @@ declare module '.' {
     interface Options {
       target?: number[]
     }
+  }
+}
+
+export class Detail {
+  private output: [text: string, order: number][] = []
+
+  add(text: string, order: number) {
+    order ??= 0
+    const index = this.output.findIndex(a => a[1] < order)
+    if (index >= 0) {
+      this.output.splice(index, 0, [text, order])
+    } else {
+      this.output.push([text, order])
+    }
+  }
+
+  toString() {
+    return this.output.map(entry => entry[0]).join('\n')
   }
 }
 
@@ -43,10 +62,10 @@ export default function apply(ctx: Context) {
     await ctx.parallel('dialogue/search', session, {}, dialogues)
   })
 
-  ctx.on('dialogue/detail', ({ original, answer, flag }, output, session) => {
+  ctx.on('dialogue/detail', ({ original, answer, flag }, detail, session) => {
     const entity = session.text(`.entity.${flag & Dialogue.Flag.regexp ? 'regexp' : 'question'}`)
-    output.push(session.text('.detail', [entity, original]))
-    output.push(session.text('.detail', [session.text('.entity.answer'), answer]))
+    detail.add(session.text('.detail', [entity, original]), 1100)
+    detail.add(session.text('.detail', [session.text('.entity.answer'), answer]), 1000)
   })
 }
 
@@ -105,10 +124,11 @@ export async function analyze(session: Dialogue.Session) {
     }
     for (let index = 0; index < dialogues.length; index++) {
       const type = session.text(`.entity.${options.action === 'review' ? 'history' : 'detail'}`)
-      const output = [session.text('.detail-header', [dialogues[index].id, type])]
-      await app.serial('dialogue/detail', dialogues[index], output, session)
+      const detail = new Detail()
+      detail.add(session.text('.detail-header', [dialogues[index].id, type]), Infinity)
+      app.emit('dialogue/detail', dialogues[index], detail, session)
       if (index) await sleep(previewDelay)
-      await session.send(output.join('\n'))
+      await session.send(detail.toString())
     }
     return ''
   }

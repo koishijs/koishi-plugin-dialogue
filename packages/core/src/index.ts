@@ -2,10 +2,10 @@ import { Argv, Awaitable, Context, Query, Schema, Time } from 'koishi'
 import * as Koishi from 'koishi'
 
 // features
+import { DialogueService } from './service'
 import command from './command'
 import receiver from './receiver'
 import search from './search'
-import service from './service'
 import update from './update'
 import review from './review'
 import internal from './internal'
@@ -143,7 +143,7 @@ export function apply(ctx: Context, config: Config) {
   ctx.i18n.define('zh', require('./locales/zh'))
 
   // features
-  ctx.plugin(service, config)
+  ctx.plugin(DialogueService, config)
   ctx.plugin(command, config)
   ctx.plugin(receiver, config)
   ctx.plugin(search, config)

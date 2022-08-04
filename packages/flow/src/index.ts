@@ -1,7 +1,7 @@
 import { contain, Context, defineProperty, Dict, difference, Query, union } from 'koishi'
 import { Dialogue, equal, prepareTargets, RE_DIALOGUES, split } from 'koishi-plugin-dialogue'
 
-declare module 'koishi-plugin-dialogue/lib/receiver' {
+declare module 'koishi-plugin-dialogue' {
   interface SessionState {
     predecessors?: Record<number, Record<number, number>>
   }
@@ -178,18 +178,18 @@ export function apply(ctx: Context, config: Dialogue.Config) {
     }
   })
 
-  ctx.on('dialogue/detail', async (dialogue, output, session) => {
+  ctx.on('dialogue/detail', (dialogue, detail, session) => {
     if (dialogue.flag & Dialogue.Flag.context) {
-      output.push(session.text('.flowgraph.detail.context-mode'))
+      detail.add(session.text('.flowgraph.detail.context-mode'), 300)
     }
     if ((dialogue.successorTimeout || successorTimeout) !== successorTimeout) {
-      output.push(session.text('.flowgraph.detail.timeout', dialogue))
+      detail.add(session.text('.flowgraph.detail.timeout', dialogue), 300)
     }
     if (dialogue._predecessors.length) {
-      output.push(session.text('.flowgraph.detail.predecessors'), ...ctx.dialogue.list(session, dialogue._predecessors))
+      detail.add(session.text('.flowgraph.detail.predecessors'), ...ctx.dialogue.list(session, dialogue._predecessors), 300)
     }
     if (dialogue._successors.length) {
-      output.push(session.text('.flowgraph.detail.successors'), ...ctx.dialogue.list(session, dialogue._successors))
+      detail.addd(session.text('.flowgraph.detail.successors'), ...ctx.dialogue.list(session, dialogue._successors), 300)
     }
   })
 

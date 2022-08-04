@@ -86,9 +86,9 @@ export function apply(ctx: Context, config: Config) {
     return `${hours}:${minutes.toString().padStart(2, '0')}`
   }
 
-  ctx.on('dialogue/detail', (dialogue, output, session) => {
+  ctx.on('dialogue/detail', (dialogue, detail, session) => {
     if (dialogue.startTime === dialogue.endTime) return
-    output.push(`${session.text('.time.detail')}${formatTime(dialogue.startTime)}-${formatTime(dialogue.endTime)}`)
+    detail.add(`${session.text('.time.detail')}${formatTime(dialogue.startTime)}-${formatTime(dialogue.endTime)}`, 800)
   })
 
   ctx.on('dialogue/abstract', (dialogue, output) => {

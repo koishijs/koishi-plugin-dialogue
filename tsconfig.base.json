@@ -4,6 +4,7 @@
     "module": "commonjs",
     "composite": true,
     "declaration": true,
+    "emitDeclarationOnly": true,
     "incremental": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
