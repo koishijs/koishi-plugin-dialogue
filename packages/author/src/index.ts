@@ -18,7 +18,7 @@ declare module 'koishi-plugin-dialogue' {
       nameMap?: Dict<string>
       /**
        * a dict for storing user permissions, whose keys includes
-       * all writers of the target dialogues list plus the -w option
+       * all writers of the target dialogues list plus the -a option
        */
       authMap?: Dict<number>
       substitute?: boolean
@@ -28,15 +28,17 @@ declare module 'koishi-plugin-dialogue' {
 
 export interface Config {
   authority?: {
-    frozen?: number
     writer?: number
+    frozen?: number
   }
 }
 
+const AUTHOR_NOT_EXIST = '__AUTHOR_NOT_EXIST__'
+
 export const Config: Schema<Config> = Schema.object({
   authority: Schema.object({
-    frozen: Schema.number().default(2).description('设置作者或匿名的权限等级。'),
-    writer: Schema.number().default(4).description('修改锁定状态的权限等级。'),
+    writer: Schema.number().default(2).description('设置作者或匿名的权限等级。'),
+    frozen: Schema.number().default(4).description('修改锁定状态的权限等级。'),
   }),
 })
 
@@ -56,8 +58,8 @@ export function apply(ctx: Context, config: Config) {
   ctx.command('teach')
     .option('frozen', '-f', { authority: authority.frozen })
     .option('frozen', '-F, --no-frozen', { authority: authority.frozen, value: false })
-    .option('writer', '-w <uid:user>')
-    .option('writer', '-W, --anonymous', { authority: authority.writer, value: '' })
+    .option('writer', '-a <uid:user>')
+    .option('writer', '-A, --anonymous', { authority: authority.writer, value: '' })
     .option('substitute', '-s')
     .option('substitute', '-S, --no-substitute', { value: false })
 
@@ -71,14 +73,14 @@ export function apply(ctx: Context, config: Config) {
     const { nameMap, dialogues, authMap } = options
     const writers = new Set(dialogues.map(d => d.writer).filter(Boolean))
     const fields: User.Field[] = ['id', 'authority', session.platform as never]
-    if (options.writer === '') {
-      options.writer = ''
-    } else if (options.writer) {
+    if (options.writer) {
       const [platform, userId] = options.writer.split(':')
       const user = await ctx.database.getUser(platform, userId, fields)
       if (user) {
         writers.add(user.id)
         options.writer = user.id
+      } else {
+        options.writer = AUTHOR_NOT_EXIST
       }
     }
     if (options.action !== 'modify') fields.push('name')
@@ -106,7 +108,7 @@ export function apply(ctx: Context, config: Config) {
         for (const userId in memberMap) {
           nameMap[idMap[userId]] ||= memberMap[userId]
         }
-      } catch { }
+      } catch {}
     }
   })
 
@@ -129,7 +131,7 @@ export function apply(ctx: Context, config: Config) {
   // 2. when adding or modifying a dialogue, if the dialogue is in substitute mode,
   //    or the operator is to set the dialogue to substitute mode,
   //    a higher authority than the original writer is required
-  // 3. when using -w, the original writer authority should be higher than the target user
+  // 3. when using -a, the original writer authority should be higher than the target user
   // 4. frozen dialogues require `frozen` authority to modify
   ctx.on('dialogue/permit', (session, { writer, flag }) => {
     const { target, substitute, writer: newWriter, authMap } = session.argv.options
@@ -163,7 +165,7 @@ export function apply(ctx: Context, config: Config) {
 
   ctx.before('dialogue/modify', async (session) => {
     const { writer } = session.argv.options
-    if (options.writer && typeof writer === 'undefined') {
+    if (writer === AUTHOR_NOT_EXIST) {
       return session.text('.writer.target-not-exist')
     }
   })

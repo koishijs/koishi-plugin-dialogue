@@ -224,7 +224,7 @@ export function sendResult(session: Dialogue.Session, prolog?: string, epilog?: 
     }
   }
   if (forbidden.length) {
-    const operation = session.text('.operation.' + action)
+    const operation = session.text('.operation.' + (action === 'create' ? 'modify' : action))
     output.push(session.text('.permission-denied', [forbidden.join(', '), operation]))
   }
   if (unknown.length) {
