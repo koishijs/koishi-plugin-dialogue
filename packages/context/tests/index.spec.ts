@@ -4,7 +4,7 @@ import * as context from '../src'
 const DETAIL_HEAD = '问答 1 的详细信息：\n问题：foo\n回答：bar\n'
 const SEARCH_HEAD = '问题“foo”的回答如下：\n'
 
-describe('Teach Plugin - Context', () => {
+describe('koishi-plugin-dialogue-context', () => {
   const { app, u3, u3g1, u3g2, u2g1 } = createEnvironment({})
 
   app.plugin(context)

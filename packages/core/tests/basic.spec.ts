@@ -4,7 +4,7 @@ import * as jest from 'jest-mock'
 
 const logger = new Logger('dialogue')
 
-describe('Dialogue Create', () => {
+describe('koishi-plugin-dialogue (create)', () => {
   const { app, u3g1 } = createEnvironment()
 
   it('basic support', async () => {
@@ -39,7 +39,7 @@ describe('Dialogue Create', () => {
   })
 })
 
-describe('Dialogue Modify', () => {
+describe('koishi-plugin-dialogue (modify)', () => {
   const { u3g1 } = createEnvironment({
     maxPreviews: 1,
   })
@@ -74,7 +74,7 @@ describe('Dialogue Modify', () => {
   })
 })
 
-describe('Dialogue Search', () => {
+describe('koishi-plugin-dialogue (search)', () => {
   const { u3g1 } = createEnvironment({
     mergeThreshold: 1,
   })
@@ -104,7 +104,7 @@ describe('Dialogue Search', () => {
   })
 })
 
-describe('Dialogue Assets', () => {
+describe('koishi-plugin-dialogue (assets)', () => {
   const logger = new Logger('teach')
   const { app, u3g1 } = createEnvironment()
   const upload = jest.fn(async (url: string) => url)

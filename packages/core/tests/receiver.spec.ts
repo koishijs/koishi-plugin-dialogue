@@ -4,7 +4,7 @@ import { install, InstalledClock } from '@sinonjs/fake-timers'
 import createEnvironment from '.'
 import * as jest from 'jest-mock'
 
-describe('Teach Plugin - Appellative', () => {
+describe('koishi-plugin-dialogue (appellative)', () => {
   const { u3g1 } = createEnvironment({})
 
   let clock: InstalledClock
@@ -58,7 +58,7 @@ describe('Teach Plugin - Appellative', () => {
   })
 })
 
-describe('Teach Plugin - Interpolate', () => {
+describe('koishi-plugin-dialogue (interpolate)', () => {
   function createTest(title: string, callback: (u3g1: MessageClient) => Promise<void>) {
     it(title, async () => {
       const { app, u3g1, start, stop } = createEnvironment({})

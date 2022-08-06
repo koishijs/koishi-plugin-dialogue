@@ -2,7 +2,7 @@ import createEnvironment from 'koishi-plugin-dialogue/tests'
 import { App } from 'koishi'
 import * as rateLimit from '../src'
 
-describe('Rate Limit', () => {
+describe('koishi-plugin-dialogue-rate-limit', () => {
   // make coverage happy
   new App().plugin(rateLimit, { throttle: [] })
   new App().plugin(rateLimit, { preventLoop: [] })
