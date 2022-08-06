@@ -49,6 +49,20 @@ export function apply(ctx: Context, config: Dialogue.Config) {
     successorTimeout: 'unsigned',
   })
 
+  /* eslint-disable no-irregular-whitespace */
+  ctx.on('dialogue/usage', (output) => {
+    output.add(`\
+前置与后继：
+　设置前置问题：　< id
+　添加前置问题：　<< id
+　设置后继问题：　> id
+　添加后继问题：　>> id
+　上下文触发后继：-c/-C
+　前置生效时间：　-z secs
+　创建新问答并作为后继：>#`, 200)
+  })
+  /* eslint-enable no-irregular-whitespace */
+
   const { successorTimeout = 20000 } = config
 
   ctx.command('teach')
@@ -186,10 +200,16 @@ export function apply(ctx: Context, config: Dialogue.Config) {
       detail.add(session.text('.flowgraph.detail.timeout', dialogue), 300)
     }
     if (dialogue._predecessors.length) {
-      detail.add(session.text('.flowgraph.detail.predecessors'), ...ctx.dialogue.list(session, dialogue._predecessors), 300)
+      detail.add([
+        session.text('.flowgraph.detail.predecessors'),
+        ...ctx.dialogue.list(session, dialogue._predecessors),
+      ].join('\n'), 300)
     }
     if (dialogue._successors.length) {
-      detail.addd(session.text('.flowgraph.detail.successors'), ...ctx.dialogue.list(session, dialogue._successors), 300)
+      detail.add([
+        session.text('.flowgraph.detail.successors'),
+        ...ctx.dialogue.list(session, dialogue._successors),
+      ].join('\n'), 300)
     }
   })
 

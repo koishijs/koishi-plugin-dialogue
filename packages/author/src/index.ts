@@ -55,6 +55,19 @@ export function apply(ctx: Context, config: Config) {
     writer: 'string(255)',
   })
 
+  /* eslint-disable no-irregular-whitespace */
+  ctx.on('dialogue/usage', (output, session) => {
+    if (session.user.authority >= authority.frozen) {
+      output.add('　锁定问答：　　　-f/-F', 550)
+      output.add('　教学者代行：　　-s/-S', 550)
+    }
+    if (session.user.authority >= authority.writer) {
+      output.add('　设置问题作者：　-a user', 550)
+      output.add('　设置为匿名：　　-A', 550)
+    }
+  })
+  /* eslint-enable no-irregular-whitespace */
+
   ctx.command('teach')
     .option('frozen', '-f', { authority: authority.frozen })
     .option('frozen', '-F, --no-frozen', { authority: authority.frozen, value: false })

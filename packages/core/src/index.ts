@@ -97,8 +97,8 @@ export namespace Dialogue {
     dialogueMap?: Record<number, Dialogue>
   }
 
-  export interface Session extends Koishi.Session {
-    argv: Argv<never, never, string[], Dialogue.Options>
+  export interface Session extends Koishi.Session<'authority'> {
+    argv: Argv<'authority', never, string[], Dialogue.Options>
   }
 }
 

@@ -44,6 +44,13 @@ export function apply(ctx: Context, config: Config) {
     endTime: 'integer',
   })
 
+  /* eslint-disable no-irregular-whitespace */
+  ctx.on('dialogue/usage', (output, session) => {
+    output.add('　设置起始时间：　-t time', 450)
+    output.add('　设置结束时间：　-T time', 450)
+  })
+  /* eslint-enable no-irregular-whitespace */
+
   ctx.command('teach')
     .option('startTime', '-t <time>', { type: isHours })
     .option('endTime', '-T <time>', { type: isHours })

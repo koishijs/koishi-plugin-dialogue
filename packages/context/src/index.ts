@@ -100,6 +100,21 @@ export function apply(ctx: Context, config: Config) {
       }
     })
 
+  /* eslint-disable no-irregular-whitespace */
+  ctx.on('dialogue/usage', (output, session) => {
+    output.add(`\
+上下文选项：
+　允许本群：　　　-e
+　禁止本群：　　　-d`, 700)
+    if (session.user.authority < authority) return
+    output.add(`\
+　全局允许：　　　-E
+　全局禁止：　　　-D
+　设置群号：　　　-g id
+　无视上下文搜索：-G`, 700)
+  })
+  /* eslint-enable no-irregular-whitespace */
+
   ctx.on('dialogue/modify', (session, data) => {
     const { _guilds, partial, reversed } = session.argv.options
     if (!_guilds) return

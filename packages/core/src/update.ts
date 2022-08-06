@@ -1,5 +1,5 @@
 import { Awaitable, Context, difference, observe, pick, sleep } from 'koishi'
-import { Dialogue } from '.'
+import { Dialogue, OrderedList } from '.'
 
 declare module 'koishi' {
   interface Events {
@@ -7,7 +7,7 @@ declare module 'koishi' {
     'dialogue/modify'(session: Dialogue.Session, dialogue: Dialogue): void
     'dialogue/after-modify'(session: Dialogue.Session): void
     'dialogue/before-detail'(session: Dialogue.Session): Awaitable<void>
-    'dialogue/detail'(dialogue: Dialogue, detail: Detail, session: Dialogue.Session): void
+    'dialogue/detail'(dialogue: Dialogue, detail: OrderedList, session: Dialogue.Session): void
   }
 }
 
@@ -21,24 +21,6 @@ declare module '.' {
     interface Options {
       target?: number[]
     }
-  }
-}
-
-export class Detail {
-  private output: [text: string, order: number][] = []
-
-  add(text: string, order: number) {
-    order ??= 0
-    const index = this.output.findIndex(a => a[1] < order)
-    if (index >= 0) {
-      this.output.splice(index, 0, [text, order])
-    } else {
-      this.output.push([text, order])
-    }
-  }
-
-  toString() {
-    return this.output.map(entry => entry[0]).join('\n')
   }
 }
 
@@ -124,7 +106,7 @@ export async function analyze(session: Dialogue.Session) {
     }
     for (let index = 0; index < dialogues.length; index++) {
       const type = session.text(`.entity.${options.action === 'review' ? 'history' : 'detail'}`)
-      const detail = new Detail()
+      const detail = new OrderedList()
       detail.add(session.text('.detail-header', [dialogues[index].id, type]), Infinity)
       app.emit('dialogue/detail', dialogues[index], detail, session)
       if (index) await sleep(previewDelay)

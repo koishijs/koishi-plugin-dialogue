@@ -14,3 +14,21 @@ export function equal(array1: (string | number)[], array2: (string | number)[]) 
 }
 
 export const RE_DIALOGUES = /^\d+(\.\.\d+)?(,\d+(\.\.\d+)?)*$/
+
+export class OrderedList {
+  private output: [text: string, order: number][] = []
+
+  add(text: string, order: number) {
+    order ??= 0
+    const index = this.output.findIndex(a => a[1] < order)
+    if (index >= 0) {
+      this.output.splice(index, 0, [text, order])
+    } else {
+      this.output.push([text, order])
+    }
+  }
+
+  toString() {
+    return this.output.map(entry => entry[0]).join('\n')
+  }
+}
