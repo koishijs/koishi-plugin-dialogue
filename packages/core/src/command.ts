@@ -1,6 +1,6 @@
 /* eslint-disable no-irregular-whitespace */
 
-import { Argv, Context, deduplicate, escapeRegExp, Session } from 'koishi'
+import { Argv, Context, deduplicate, escapeRegExp } from 'koishi'
 import { OrderedList, split } from './utils'
 import { Dialogue } from '.'
 import {} from '@koishijs/plugin-console'
@@ -26,7 +26,7 @@ export interface AuthorityConfig {
   receive?: number
 }
 
-const cheatSheet = (session: Session<'authority'>, config: Dialogue.Config) => {
+const cheatSheet = (session: Dialogue.Session, config: Dialogue.Config) => {
   const { authority } = session.user
   const { authority: a, prefix: p } = config
   const l = p[p.length - 1]
@@ -124,7 +124,7 @@ export default function command(ctx: Context, config: Dialogue.Config) {
   ctx.command('teach', { authority: config.authority.base, checkUnknown: true, hideOptions: true })
     .userFields(['authority', 'id'])
     .option('target', '')
-    .usage(session => cheatSheet(session, config))
+    .usage(session => cheatSheet(session as Dialogue.Session, config))
     .before(({ session }) => {
       return ctx.serial('dialogue/before-action', session as never)
     }, true)

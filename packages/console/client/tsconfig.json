@@ -3,6 +3,7 @@
     "rootDir": ".",
     "target": "esnext",
     "module": "esnext",
+    "jsx": "preserve",
     "noEmit": true,
     "composite": true,
     "incremental": true,

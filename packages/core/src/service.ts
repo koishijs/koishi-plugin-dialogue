@@ -1,19 +1,7 @@
 import { $, clone, Context, defineProperty, escapeRegExp, makeArray, Observed, Query, segment, Service } from 'koishi'
 // import { Dialogue, DialogueTest, equal } from './utils'
-import { Dialogue, DialogueTest, OrderedList } from '.'
+import { Dialogue, DialogueTest } from '.'
 import { simplify } from 'simplify-chinese'
-
-declare module 'koishi' {
-  interface Context {
-    dialogue: DialogueService
-  }
-
-  interface Events {
-    'dialogue/abstract'(dialogue: Dialogue, output: Abstract, session: Dialogue.Session): void
-    'dialogue/appendix'(dialogue: Dialogue, output: string[], prefix: string, session: Dialogue.Session): void
-    'dialogue/usage'(output: OrderedList, session: Dialogue.Session): void
-  }
-}
 
 const halfWidth = ',,.~?!()[]'
 const fullWidth = '，、。～？！（）【】'

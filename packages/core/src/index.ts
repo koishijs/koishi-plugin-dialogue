@@ -2,7 +2,8 @@ import { Argv, Awaitable, Context, Query, Schema, Time } from 'koishi'
 import * as Koishi from 'koishi'
 
 // features
-import { DialogueService } from './service'
+import { Abstract, DialogueService } from './service'
+import { OrderedList } from './utils'
 import command from './command'
 import receiver from './receiver'
 import search from './search'
@@ -27,6 +28,13 @@ declare module 'koishi' {
     'dialogue/before-action'(session: Dialogue.Session): Awaitable<void | string>
     'dialogue/permit'(session: Dialogue.Session, dialogue: Dialogue): boolean
     'dialogue/query'(test: DialogueTest, query: Query.Expr<Dialogue>): void
+    'dialogue/abstract'(dialogue: Dialogue, output: Abstract, session: Dialogue.Session): void
+    'dialogue/appendix'(dialogue: Dialogue, output: string[], prefix: string, session: Dialogue.Session): void
+    'dialogue/usage'(output: OrderedList, session: Dialogue.Session): void
+  }
+
+  interface Context {
+    dialogue: DialogueService
   }
 
   interface Tables {
