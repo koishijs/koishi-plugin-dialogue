@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-dialogue-author",
   "description": "Author Support for koishi-plugin-dialogue",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
@@ -28,6 +28,10 @@
     "conversation"
   ],
   "koishi": {
+    "description": {
+      "en": "Setup authors for dialogues",
+      "zh": "问答系统的署名管理"
+    },
     "service": {
       "required": [
         "dialogue"
@@ -35,10 +39,10 @@
     }
   },
   "peerDependencies": {
-    "koishi": "^4.8.3",
-    "koishi-plugin-dialogue": "^4.0.0"
+    "koishi": "^4.8.4",
+    "koishi-plugin-dialogue": "^4.0.1"
   },
   "devDependencies": {
-    "koishi": "^4.8.3"
+    "koishi": "^4.8.4"
   }
 }

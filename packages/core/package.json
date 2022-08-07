@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-dialogue",
   "description": "Dialogue Plugin for Koishi",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
@@ -29,6 +29,10 @@
     "conversation"
   ],
   "koishi": {
+    "description": {
+      "en": "A powelful and convenient dialogue system",
+      "zh": "强大而易用的问答系统"
+    },
     "service": {
       "required": [
         "database"
@@ -42,10 +46,10 @@
     }
   },
   "peerDependencies": {
-    "koishi": "^4.8.3"
+    "koishi": "^4.8.4"
   },
   "devDependencies": {
-    "koishi": "^4.8.3"
+    "koishi": "^4.8.4"
   },
   "dependencies": {
     "fastest-levenshtein": "^1.0.14",

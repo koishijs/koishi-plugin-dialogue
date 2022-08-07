@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-dialogue-console",
   "description": "Console Support for koishi-plugin-dialogue",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
@@ -28,6 +28,7 @@
     "conversation"
   ],
   "koishi": {
+    "hidden": true,
     "service": {
       "required": [
         "console",
@@ -36,13 +37,15 @@
     }
   },
   "peerDependencies": {
-    "@koishijs/plugin-console": "^4.3.2",
-    "koishi": "^4.8.3",
-    "koishi-plugin-dialogue": "^4.0.0"
+    "@koishijs/plugin-console": "^4.3.4",
+    "@koishijs/plugin-status": "^6.1.2",
+    "koishi": "^4.8.4",
+    "koishi-plugin-dialogue": "^4.0.1"
   },
   "devDependencies": {
-    "@koishijs/client": "^4.3.2",
-    "@koishijs/plugin-console": "^4.3.2",
-    "koishi": "^4.8.3"
+    "@koishijs/client": "^4.3.4",
+    "@koishijs/plugin-console": "^4.3.4",
+    "@koishijs/plugin-status": "^6.1.2",
+    "koishi": "^4.8.4"
   }
 }
