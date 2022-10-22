@@ -46,13 +46,13 @@
     }
   },
   "peerDependencies": {
-    "koishi": "^4.8.4"
+    "koishi": "^4.9.6"
   },
   "devDependencies": {
-    "koishi": "^4.8.4"
+    "koishi": "^4.9.6"
   },
   "dependencies": {
-    "fastest-levenshtein": "^1.0.14",
+    "fastest-levenshtein": "^1.0.16",
     "simplify-chinese": "^1.2.0"
   }
 }

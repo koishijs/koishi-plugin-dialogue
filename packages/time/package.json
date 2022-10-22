@@ -39,10 +39,10 @@
     }
   },
   "peerDependencies": {
-    "koishi": "^4.8.4",
+    "koishi": "^4.9.6",
     "koishi-plugin-dialogue": "^4.0.1"
   },
   "devDependencies": {
-    "koishi": "^4.8.4"
+    "koishi": "^4.9.6"
   }
 }

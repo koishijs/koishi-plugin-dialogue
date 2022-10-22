@@ -3,7 +3,7 @@ import { defineConfig } from 'vitepress'
 export default defineConfig({
   lang: 'zh-CN',
   title: 'koishi-plugin-dialogue',
-  description: '基于 koishi 的对话系统',
+  description: '基于 Koishi 的对话系统',
 
   themeConfig: {
     outline: [2, 3],
