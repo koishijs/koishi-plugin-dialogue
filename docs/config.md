@@ -1,7 +1,3 @@
----
-sidebarDepth: 2
----
-
 # 配置项
 
 ## prefix
@@ -34,12 +30,12 @@ interface AuthorityConfig {
 - 类型: `number`
 - 默认值: `60000`
 
-教学记录的保存时长，单位为毫秒。参见 [查询近期操作](./basic.md#查询近期操作)。
+教学记录的保存时长，单位为毫秒。参见 [查询近期操作](./#查询近期操作)。
 
 ## nickname
 
 - 类型: `string | string[]`
-- 默认值: [`app.options.nickname`](../../api/core/app.md#options-nickname)
+- 默认值: [`app.config.nickname`](https://koishi.chat/api/core/app.md#options-nickname)
 
 问答中使用的昵称。参见 [称呼匹配](./prob.md#称呼匹配)。
 

@@ -1,7 +1,3 @@
----
-sidebarDepth: 2
----
-
 # 上下文机制
 
 ::: warning 提示

@@ -13,6 +13,9 @@
     "build": "yarn build:server && yarn build:types && yarn build:client",
     "bump": "yakumo version",
     "client": "yakumo client",
+    "docs:dev": "vitepress dev docs --open",
+    "docs:build": "vitepress build docs",
+    "docs:serve": "vitepress serve docs",
     "dep": "yakumo upgrade",
     "pub": "yakumo publish",
     "test": "yakumo mocha -r esbuild-register -r yml-register",
@@ -44,5 +47,6 @@
     "yakumo-tsc": "^0.3.3",
     "yakumo-upgrade": "^0.3.1",
     "yakumo-version": "^0.3.0"
+    "vitepress": "1.0.0-alpha.20"
   }
 }

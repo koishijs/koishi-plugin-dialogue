@@ -1,7 +1,3 @@
----
-sidebarDepth: 2
----
-
 # 正则匹配
 
 ::: warning

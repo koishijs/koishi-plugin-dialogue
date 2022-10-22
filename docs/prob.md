@@ -1,7 +1,3 @@
----
-sidebarDepth: 2
----
-
 # 概率机制
 
 ::: tip
