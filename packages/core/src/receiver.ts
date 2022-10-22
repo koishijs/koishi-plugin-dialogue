@@ -185,9 +185,9 @@ export async function triggerDialogue(ctx: Context, session: Session, next: Next
   state.dialogues = [dialogue]
   state.answer = dialogue.answer
     .replace(/\$\$/g, '@@__PLACEHOLDER__@@')
-    .replace(/\$A/g, segment('at', { type: 'all' }))
-    .replace(/\$a/g, segment('at', { id: session.userId }))
-    .replace(/\$m/g, segment('at', { id: session.selfId }))
+    .replace(/\$A/g, segment('at', { type: 'all' }).toString())
+    .replace(/\$a/g, segment('at', { id: session.userId }).toString())
+    .replace(/\$m/g, segment('at', { id: session.selfId }).toString())
     .replace(/\$s/g, () => escapeAnswer(session.username))
     .replace(/\$0/g, escapeAnswer(session.content))
 
@@ -274,7 +274,7 @@ export default function receiver(ctx: Context, config: Dialogue.Config) {
   })
 
   ctx.on('dialogue/receive', ({ session, test }) => {
-    if (session.content.includes('[CQ:image,')) return true
+    if (session.content.includes('<image ')) return true
     const { original, parsed, appellative, activated } = ctx.dialogue.stripQuestion(session.content)
     test.question = parsed
     test.original = original

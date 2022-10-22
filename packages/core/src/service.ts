@@ -41,7 +41,7 @@ export class DialogueService extends Service {
       autoInc: true,
     })
 
-    this.nameRE = createLeadingRE(makeArray(ctx.app.options.nickname), '@?', '([,，]\\s*|\\s+|$)')
+    this.nameRE = createLeadingRE(makeArray(ctx.root.config.nickname), '@?', '([,，]\\s*|\\s+|$)')
   }
 
   flag(flag: keyof typeof Dialogue.Flag) {
@@ -150,7 +150,7 @@ export class DialogueService extends Service {
   stripQuestion(source: string): Question {
     const original = segment.unescape(source)
     source = segment.transform(source, {
-      text: ({ content }, index, chain) => {
+      text({ content }, index, chain) {
         let message = simplify(segment.unescape('' + content))
           .toLowerCase()
           .replace(/\s+/g, '')
@@ -197,7 +197,7 @@ export function formatAnswer(source: string, { maxAnswerLength = 100 }: Dialogue
     trimmed = true
     source = lines[0].trim()
   }
-  source = source.replace(/\[CQ:image,[^\]]+\]/g, '[图片]')
+  source = source.replace(/<image [^>]+>/g, '[图片]')
   if (source.length > maxAnswerLength) {
     trimmed = true
     source = source.slice(0, maxAnswerLength)

@@ -7,7 +7,7 @@ commands:
       addSucc: 添加后置问题
       createSuccessor: 创建并添加后继问答
       successorTimeout: 设置允许触发后继的时间
-      context: 允许后继问答被任何人触发
+      context.true: 允许后继问答被任何人触发
       context.false: 后继问答只能被同一人触发
 
     messages:

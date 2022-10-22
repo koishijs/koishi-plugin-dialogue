@@ -16,7 +16,7 @@ describe('koishi-plugin-dialogue (create)', () => {
   })
 
   it('validate question', async () => {
-    await u3g1.shouldReply('# [CQ:image] bar', '问题必须是纯文本。')
+    await u3g1.shouldReply('# <image /> bar', '问题必须是纯文本。')
     await u3g1.shouldReply('# foo[foo bar -x', '问题含有错误的或不支持的正则表达式语法。')
   })
 
@@ -117,8 +117,8 @@ describe('koishi-plugin-dialogue (assets)', () => {
 
   it('upload succeed', async () => {
     upload.mockResolvedValue('https://127.0.0.1/image/baz')
-    await u3g1.shouldReply('# foo [CQ:image,file=baz,url=bar]', '问答已添加，编号为 1。')
-    await u3g1.shouldReply('foo', '[CQ:image,url=https://127.0.0.1/image/baz]')
+    await u3g1.shouldReply('# foo <image file=baz url=bar/>', '问答已添加，编号为 1。')
+    await u3g1.shouldReply('foo', '<image url="https://127.0.0.1/image/baz"/>')
   })
 
   it('upload failed', async () => {
@@ -126,7 +126,7 @@ describe('koishi-plugin-dialogue (assets)', () => {
     upload.mockRejectedValue('failed')
     try {
       await u3g1.shouldReply('#1 fooo', '问答 1 已成功修改。')
-      await u3g1.shouldReply('#1 ~ [CQ:image,file=bar,url=baz]', '上传资源时发生错误。')
+      await u3g1.shouldReply('#1 ~ <image file=bar url=baz/>', '上传资源时发生错误。')
     } finally {
       logger.level = Logger.WARN
     }

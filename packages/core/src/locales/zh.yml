@@ -19,7 +19,7 @@ commands:
 
       # internal
       ignoreHint: 忽略智能提示
-      regexp: 使用正则表达式匹配
+      regexp.true: 使用正则表达式匹配
       regexp.false: 取消使用正则表达式匹配
       redirect: 重定向到其他问答
 

@@ -67,7 +67,7 @@ const cheatSheet = (session: Dialogue.Session, config: Dialogue.Config) => {
 　$0：收到的原文本
 　$n：分条发送
 　$a：@说话人
-　$m：@${session.app.options.nickname[0]}
+　$m：@${session.app.config.nickname[0]}
 　$s：说话人的名字
 　\$()：指令插值
 　\${}：表达式插值`, 0)
