@@ -1,4 +1,4 @@
-import { Argv, Awaitable, Context, Query, Schema, segment, Time } from 'koishi'
+import { Argv, Awaitable, Context, Query, Schema, Time } from 'koishi'
 import * as Koishi from 'koishi'
 
 // features
@@ -24,7 +24,7 @@ export * from './probability'
 declare module 'koishi' {
   interface Events {
     'dialogue/validate'(session: Dialogue.Session): void | string
-    'dialogue/action'(session: Dialogue.Session): Awaitable<void | string | segment>
+    'dialogue/action'(session: Dialogue.Session): Awaitable<void | Fragment>
     'dialogue/before-action'(session: Dialogue.Session): Awaitable<void | string>
     'dialogue/permit'(session: Dialogue.Session, dialogue: Dialogue): boolean
     'dialogue/query'(test: DialogueTest, query: Query.Expr<Dialogue>): void

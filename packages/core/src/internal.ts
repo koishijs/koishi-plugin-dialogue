@@ -39,9 +39,16 @@ export default function apply(ctx: Context, config: Dialogue.Config) {
     const { options, args } = session.argv
     const question = parseArgument()
     const answer = options.redirect ? `$(dialogue ${options.redirect})` : parseArgument()
-    if (args.length) {
-      return session.text('.too-many-arguments')
-    } else if (/\[CQ:(?!face)/.test(question)) {
+    if (args.length) return session.text('.too-many-arguments')
+    try {
+      segment.transform(question, {
+        text: true,
+        face: true,
+        default: () => {
+          throw new Error()
+        },
+      })
+    } catch {
       return session.text('.prohibited-cq-code')
     }
     const { original, parsed, appellative } = options.regexp

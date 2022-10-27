@@ -3,6 +3,7 @@
 import { Argv, Context, deduplicate, escapeRegExp } from 'koishi'
 import { OrderedList, split } from './utils'
 import { Dialogue } from '.'
+import {} from '@koishijs/plugin-help'
 import {} from '@koishijs/plugin-console'
 import {} from '@koishijs/plugin-status'
 

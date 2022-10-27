@@ -1,7 +1,6 @@
 import { $, clone, Context, defineProperty, escapeRegExp, makeArray, Observed, Query, segment, Service } from 'koishi'
 // import { Dialogue, DialogueTest, equal } from './utils'
-import { Dialogue, DialogueTest } from '.'
-import { simplify } from 'simplify-chinese'
+import { Dialogue, DialogueTest, SessionState } from '.'
 
 const halfWidth = ',,.~?!()[]'
 const fullWidth = '，、。～？！（）【】'
@@ -23,7 +22,8 @@ function createLeadingRE(patterns: string[], prefix = '', suffix = '') {
 }
 
 export class DialogueService extends Service {
-  history: Record<number, Dialogue> = {}
+  states: Record<string, SessionState> = Object.create(null)
+  history: Record<number, Dialogue> = Object.create(null)
   nameRE: RegExp
 
   constructor(ctx: Context, public config: Dialogue.Config) {
@@ -150,16 +150,15 @@ export class DialogueService extends Service {
   stripQuestion(source: string): Question {
     const original = segment.unescape(source)
     source = segment.transform(source, {
-      text({ content }, index, chain) {
-        let message = simplify(segment.unescape('' + content))
+      text({ content }) {
+        return segment.unescape('' + content)
           .toLowerCase()
           .replace(/\s+/g, '')
           .replace(fullWidthRegExp, $0 => halfWidth[fullWidth.indexOf($0)])
-        if (index === 0) message = message.replace(/^[()\[\]]*/, '')
-        if (index === chain.length - 1) message = message.replace(/[\.,?!()\[\]~]*$/, '')
-        return message
       },
     })
+    source = source.replace(/^\(*/, '')
+    source = source.replace(/[\.,?!()~]*$/, '')
     const capture = this.nameRE.exec(source)
     const unprefixed = capture ? source.slice(capture[0].length) : source
     return {

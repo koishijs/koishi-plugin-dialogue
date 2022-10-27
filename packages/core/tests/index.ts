@@ -7,6 +7,7 @@ export default function (config: dialogue.Config = {}) {
   const app = new App({
     nickname: ['koishi', 'satori'],
   })
+  const err = new Error()
 
   app.plugin(mock)
   app.plugin(memory)
@@ -29,6 +30,7 @@ export default function (config: dialogue.Config = {}) {
   })
 
   async function start() {
+    if (app.events.isActive) return
     await app.start()
     await app.mock.initUser(u2id, 2)
     await app.mock.initUser(u3id, 3)
@@ -38,6 +40,7 @@ export default function (config: dialogue.Config = {}) {
   }
 
   async function stop() {
+    if (!app.events.isActive) return
     await app.database.dropAll()
     await app.stop()
   }

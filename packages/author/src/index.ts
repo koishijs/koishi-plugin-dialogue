@@ -206,7 +206,7 @@ export function apply(ctx: Context, config: Config) {
     if (dialogue.flag & Dialogue.Flag.substitute && dialogue.writer && session.user.id !== dialogue.writer) {
       const { platform } = session
       const userFields = new Set<User.Field>(['name', 'flag', platform as never])
-      ctx.app.emit(session, 'dialogue/before-attach-user', state, userFields)
+      ctx.emit(session, 'dialogue/before-attach-user', state, userFields)
       // do a little trick here
       session.platform = 'id'
       session.userId = dialogue.writer

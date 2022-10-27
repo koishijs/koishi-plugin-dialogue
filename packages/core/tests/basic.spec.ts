@@ -16,7 +16,7 @@ describe('koishi-plugin-dialogue (create)', () => {
   })
 
   it('validate question', async () => {
-    await u3g1.shouldReply('# <image /> bar', '问题必须是纯文本。')
+    await u3g1.shouldReply('# <image/> bar', '问题必须是纯文本。')
     await u3g1.shouldReply('# foo[foo bar -x', '问题含有错误的或不支持的正则表达式语法。')
   })
 

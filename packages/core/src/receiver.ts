@@ -2,10 +2,6 @@ import { Argv, Awaitable, Channel, Context, Next, noop, Random, segment, Session
 import { Dialogue, DialogueTest } from '.'
 
 declare module 'koishi' {
-  interface Context {
-    _dialogueStates: Record<number, SessionState>
-  }
-
   interface Events {
     'dialogue/state'(state: SessionState): void
     'dialogue/receive'(state: SessionState): void | boolean
@@ -56,10 +52,10 @@ export function unescapeAnswer(message: string) {
 
 Context.prototype.getSessionState = function (session) {
   const { channelId, userId, app } = session
-  if (!app._dialogueStates[channelId]) {
-    this.emit('dialogue/state', app._dialogueStates[channelId] = { channelId } as SessionState)
+  if (!app.dialogue.states[channelId]) {
+    this.emit('dialogue/state', app.dialogue.states[channelId] = { channelId } as SessionState)
   }
-  const state = Object.create(app._dialogueStates[channelId])
+  const state = Object.create(app.dialogue.states[channelId])
   state.session = session
   state.userId = userId
   return state
@@ -67,11 +63,11 @@ Context.prototype.getSessionState = function (session) {
 
 export async function getTotalWeight(ctx: Context, state: SessionState) {
   const { session, dialogues } = state
-  ctx.app.emit(session, 'dialogue/prepare', state)
+  ctx.emit(session, 'dialogue/prepare', state)
   const userFields = new Set<User.Field>(['name', 'flag'])
-  ctx.app.emit(session, 'dialogue/before-attach-user', state, userFields)
+  ctx.emit(session, 'dialogue/before-attach-user', state, userFields)
   await session.observeUser(userFields)
-  if (ctx.app.bail(session, 'dialogue/attach-user', state)) return 0
+  if (ctx.bail(session, 'dialogue/attach-user', state)) return 0
   return dialogues.reduce((prev, curr) => prev + curr._weight, 0)
 }
 
@@ -204,7 +200,7 @@ export async function triggerDialogue(ctx: Context, session: Session, next: Next
     })
   }
 
-  if (await ctx.app.serial(session, 'dialogue/before-send', state)) return
+  if (await ctx.serial(session, 'dialogue/before-send', state)) return
   logger.debug('[send]', session.messageId, '->', dialogue.answer)
 
   // send answers
@@ -225,14 +221,12 @@ export async function triggerDialogue(ctx: Context, session: Session, next: Next
     index = argv.pos
   }
   await buffer.end(content.slice(index))
-  await ctx.app.parallel(session, 'dialogue/send', state)
+  await ctx.parallel(session, 'dialogue/send', state)
 }
 
 export default function receiver(ctx: Context, config: Dialogue.Config) {
   const { maxRedirections = 3 } = config
   const ctx2 = ctx.guild()
-
-  ctx.app._dialogueStates = {}
 
   ctx.before('attach', (session) => {
     if (session.parsed.appel) return

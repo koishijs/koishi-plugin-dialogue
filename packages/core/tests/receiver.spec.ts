@@ -53,7 +53,7 @@ describe('koishi-plugin-dialogue (appellative)', () => {
   })
 
   it('unescape semgent (#309)', async () => {
-    await u3g1.shouldReply('# ^有人说&#91;:：&#93;(.+) 谁说过$1？ -x', '问答已添加，编号为 5。')
+    await u3g1.shouldReply('# ^有人说[:：](.+) 谁说过$1？ -x', '问答已添加，编号为 5。')
     await u3g1.shouldReply('有人说：要有光', '谁说过要有光？')
   })
 })
