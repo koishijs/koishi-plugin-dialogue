@@ -1,6 +1,7 @@
 lib
 dist
 temp
+coverage
 
 tsconfig.temp.json
 

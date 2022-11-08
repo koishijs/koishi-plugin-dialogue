@@ -16,7 +16,7 @@ describe('koishi-plugin-dialogue-author', () => {
 
   it('create writer', async () => {
     // 当自身未设置 username 时使用 session.sender
-    u3g1.meta.author.username = 'nick3'
+    u3g1.meta.author!.username = 'nick3'
     await u3g1.shouldReply('# foo bar', '问答已添加，编号为 1。')
     await u3g1.shouldReply('#1', DETAIL_HEAD + '来源：nick3 (300)')
 
@@ -41,7 +41,7 @@ describe('koishi-plugin-dialogue-author', () => {
   })
 
   it('anonymous', async () => {
-    u2g1.meta.author.username = 'nick2'
+    u2g1.meta.author!.username = 'nick2'
     await u2g1.shouldReply('#1', DETAIL_HEAD + '来源：nick2 (200)')
     await u2g1.shouldReply('#1 -A', '问答 1 已成功修改。')
     await u2g1.shouldReply('#1', DETAIL_HEAD.slice(0, -1))

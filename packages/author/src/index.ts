@@ -1,15 +1,15 @@
-import { Context, Dict, Schema, User } from 'koishi'
+import { Context, Dict, isNullable, Schema, User } from 'koishi'
 import { Dialogue } from 'koishi-plugin-dialogue'
 
 declare module 'koishi-plugin-dialogue' {
   interface DialogueTest {
-    writer?: string
+    writer?: number
     frozen?: boolean
     substitute?: boolean
   }
 
   interface Dialogue {
-    writer: string
+    writer: number
   }
 
   namespace Dialogue {
@@ -52,7 +52,7 @@ export function apply(ctx: Context, config: Config) {
   ctx.i18n.define('zh', require('./locales/zh'))
 
   ctx.model.extend('dialogue', {
-    writer: 'string(255)',
+    writer: 'unsigned(20)',
   })
 
   /* eslint-disable no-irregular-whitespace */
@@ -91,16 +91,16 @@ export function apply(ctx: Context, config: Config) {
       const user = await ctx.database.getUser(platform, userId, fields)
       if (user) {
         writers.add(user.id)
-        options.writer = user.id
+        options.writer = '' + user.id
       } else {
         options.writer = AUTHOR_NOT_EXIST
       }
     }
     if (options.action !== 'modify') fields.push('name')
-    const users = await ctx.database.getUser('id', [...writers], fields)
+    const users = await ctx.database.get('user', { id: [...writers] }, fields)
 
     let hasUnnamed = false
-    const idMap: Dict<string> = {}
+    const idMap: Dict<number> = {}
     for (const user of users) {
       authMap[user.id] = user.authority
       if (options.action === 'modify') continue
@@ -151,7 +151,7 @@ export function apply(ctx: Context, config: Config) {
     const { id, authority } = session.user as User.Observed
     /* eslint-disable operator-linebreak */
     return (
-      (newWriter && authority <= authMap[newWriter] && newWriter !== id) ||
+      (newWriter && authority <= authMap[newWriter] && +newWriter !== id) ||
       ((flag & Dialogue.Flag.frozen) && authority < config.authority.frozen) ||
       (writer !== id && (
         (target && authority < ctx.dialogue.config.authority.admin) || (
@@ -173,7 +173,8 @@ export function apply(ctx: Context, config: Config) {
   })
 
   ctx.before('dialogue/search', (session, test) => {
-    test.writer = session.argv.options.writer
+    if (isNullable(session.argv.options.writer)) return
+    test.writer = +session.argv.options.writer
   })
 
   ctx.before('dialogue/modify', async (session) => {
@@ -186,7 +187,7 @@ export function apply(ctx: Context, config: Config) {
   ctx.on('dialogue/modify', (session, data) => {
     const { target, writer } = session.argv.options
     if (typeof writer !== 'undefined') {
-      data.writer = writer
+      data.writer = +writer
     } else if (!target) {
       data.writer = session.user['id']
     }
@@ -209,7 +210,7 @@ export function apply(ctx: Context, config: Config) {
       ctx.emit(session, 'dialogue/before-attach-user', state, userFields)
       // do a little trick here
       session.platform = 'id'
-      session.userId = dialogue.writer
+      session.userId = dialogue.writer as any
       await session.observeUser(userFields)
       session.platform = platform
       session.userId = session.user[platform]
