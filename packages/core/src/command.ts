@@ -1,6 +1,6 @@
 /* eslint-disable no-irregular-whitespace */
 
-import { Argv, Context, deduplicate, escapeRegExp } from 'koishi'
+import { Argv, Context, deduplicate, escapeRegExp, segment } from 'koishi'
 import { OrderedList, split } from './utils'
 import { Dialogue } from '.'
 import {} from '@koishijs/plugin-help'
@@ -92,6 +92,18 @@ export default function command(ctx: Context, config: Dialogue.Config) {
     if (session.parsed.prefix) {
       prefix = session.parsed.prefix + prefix
     }
+
+    // ignore non-text prefix
+    try {
+      segment.transform(prefix, {
+        text: true,
+        default: () => { throw new Error() },
+      })
+    } catch {
+      return
+    }
+
+    prefix = segment.unescape(prefix)
     const capture = teachRegExp.exec(prefix)
     if (!capture) return
 

@@ -37,14 +37,14 @@ export default function apply(ctx: Context, config: Dialogue.Config) {
     }
 
     const { options, args } = session.argv
-    const question = parseArgument()
+    let question = parseArgument()
     const answer = options.redirect ? `$(dialogue ${options.redirect})` : parseArgument()
     if (args.length) return session.text('.too-many-arguments')
     try {
-      segment.transform(question, {
+      question = segment.transform(question, {
         text: true,
         face: true,
-        default: () => {
+        default() {
           throw new Error()
         },
       })
