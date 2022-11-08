@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-dialogue-author",
   "description": "Author Support for koishi-plugin-dialogue",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
@@ -39,10 +39,10 @@
     }
   },
   "peerDependencies": {
-    "koishi": "^4.9.7",
-    "koishi-plugin-dialogue": "^4.0.2"
+    "koishi": "^4.10.0",
+    "koishi-plugin-dialogue": "^4.0.3"
   },
   "devDependencies": {
-    "koishi": "^4.9.7"
+    "koishi": "^4.10.0"
   }
 }
