@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-dialogue-flow",
   "description": "Predecessor / Successor Support for koishi-plugin-dialogue",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
@@ -39,10 +39,10 @@
     }
   },
   "peerDependencies": {
-    "koishi": "^4.10.0",
-    "koishi-plugin-dialogue": "^4.0.3"
+    "koishi": "^4.10.3",
+    "koishi-plugin-dialogue": "^4.0.5"
   },
   "devDependencies": {
-    "koishi": "^4.10.0"
+    "koishi": "^4.10.3"
   }
 }
