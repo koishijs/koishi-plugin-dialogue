@@ -29,8 +29,8 @@ describe('koishi-plugin-dialogue-author', () => {
   it('modify writer', async () => {
     await u2g1.shouldReply('#1 -A', '问答 1 因权限过低无法修改。')
     await u4g2.shouldReply('#1 -a foo', '选项 writer 输入无效，请指定正确的用户。')
-    await u4g2.shouldReply('#1 -a <at id=500/>', '指定的目标用户不存在。')
-    await u4g2.shouldReply('#1 -a <at id=200/>', '问答 1 已成功修改。')
+    await u4g2.shouldReply('#1 -a <at id="500"/>', '指定的目标用户不存在。')
+    await u4g2.shouldReply('#1 -a <at id="200"/>', '问答 1 已成功修改。')
 
     // 实在找不到名字就只显示未知用户
     await u4g2.shouldReply('#1', DETAIL_HEAD + '来源：未知用户')

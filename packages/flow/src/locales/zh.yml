@@ -15,7 +15,7 @@ commands:
         not-found: 没有搜索到任何问答。
         detail:
           context-mode: 后继问答可以被上下文内任何人触发
-          timeout: 可触发后继时间：{successorTimeout | time}
+          timeout: 可触发后继时间：<i18n:time value={successorTimeout}/>
           predecessors: 前置问答：
           successors: 后继问答：
         abstract:

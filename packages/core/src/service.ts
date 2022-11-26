@@ -68,8 +68,8 @@ export class DialogueService extends Service {
   async stats(): Promise<Dialogue.Stats> {
     const selection = this.ctx.database.select('dialogue')
     const [dialogues, questions] = await Promise.all([
-      selection.evaluate(row => $.count(row.id)).execute(),
-      selection.evaluate(row => $.count(row.question)).execute(),
+      selection.execute(row => $.count(row.id)),
+      selection.execute(row => $.count(row.question)),
     ])
     return { dialogues, questions }
   }

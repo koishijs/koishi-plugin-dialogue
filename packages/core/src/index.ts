@@ -1,4 +1,4 @@
-import { Argv, Awaitable, Context, Query, Schema, Time } from 'koishi'
+import { Argv, Awaitable, Context, Fragment, Query, Schema, Time } from 'koishi'
 import * as Koishi from 'koishi'
 
 // features

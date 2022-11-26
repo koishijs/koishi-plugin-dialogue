@@ -53,7 +53,7 @@ commands:
       no-history: 没有搜索到满足条件的教学操作。
       recent-history: 近期执行的教学操作有：
       max-previews: 一次最多同时预览 {0} 个问答。
-      review: '{0}于：{1 | time}前'
+      review: '{0}于：<i18n:time value={1}/>前'
       detail-header: 问答 {0} 的{1}：
       detail: '{0}：{1}'
       entity:

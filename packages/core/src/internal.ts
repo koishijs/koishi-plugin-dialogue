@@ -2,6 +2,7 @@ import { Context, defineProperty, Query, segment } from 'koishi'
 import { Dialogue } from '.'
 import { analyze, create } from './update'
 import { distance } from 'fastest-levenshtein'
+import {} from '@koishijs/assets'
 
 declare module 'koishi' {
   namespace Command {
