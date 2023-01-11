@@ -1,4 +1,4 @@
-import { Awaitable, Context, difference, observe, pick, sleep } from 'koishi'
+import { Awaitable, Context, difference, h, observe, pick, sleep } from 'koishi'
 import { Dialogue, OrderedList } from '.'
 
 declare module 'koishi' {
@@ -46,8 +46,8 @@ export default function apply(ctx: Context) {
 
   ctx.on('dialogue/detail', ({ original, answer, flag }, detail, session) => {
     const entity = session.text(`.entity.${flag & Dialogue.Flag.regexp ? 'regexp' : 'question'}`)
-    detail.add(session.text('.detail', [entity, original]), 1100)
-    detail.add(session.text('.detail', [session.text('.entity.answer'), answer]), 1000)
+    detail.add(session.text('.detail', [entity, h.parse(original)]), 1100)
+    detail.add(session.text('.detail', [session.text('.entity.answer'), h.parse(answer)]), 1000)
   })
 }
 

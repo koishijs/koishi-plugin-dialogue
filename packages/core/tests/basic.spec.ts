@@ -1,4 +1,5 @@
-import { Assets, Logger } from 'koishi'
+import { Logger } from 'koishi'
+import Assets from '@koishijs/assets'
 import createEnvironment from '.'
 import * as jest from 'jest-mock'
 
