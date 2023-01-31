@@ -9,13 +9,13 @@
 如果你希望匹配问题中的某些特征而不是问题整体，你可以使用 `-x` 进行正则表达式匹配。下面是一个例子：
 
 <chat-panel>
-<chat-message nickname="Alice"># ^(.+)一时爽$ 一直%1一直爽 -x</chat-message>
+<chat-message nickname="Alice"># ^(.+)一时爽$ 一直$1一直爽 -x</chat-message>
 <chat-message nickname="Koishi">问答已添加，编号为 1001。</chat-message>
 <chat-message nickname="Alice">挖坑一时爽</chat-message>
 <chat-message nickname="Koishi">一直挖坑一直爽</chat-message>
 </chat-panel>
 
-在这个例子中，`^` 和 `$` 分别匹配问答的起始和结尾，`.+` 匹配若干个非换行字符，`%1` 表示第一个括号内的文本。这样的语法极大地提升了问答捕获的自由度。
+在这个例子中，`^` 和 `$` 分别匹配问答的起始和结尾，`.+` 匹配若干个非换行字符，`$1` 表示第一个括号内的文本。这样的语法极大地提升了问答捕获的自由度。
 
 对于已有的问答，我们也可以使用 `-X` 来取消使用正则表达式匹配。
 
