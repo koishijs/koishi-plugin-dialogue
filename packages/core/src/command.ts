@@ -67,15 +67,11 @@ const cheatSheet = (session: Dialogue.Session, config: Dialogue.Config) => {
 　$$：一个普通的 $ 字符
 　$0：收到的原文本
 　$n：分条发送
-　$a：@说话人`,470);
-if (session.app.config.nickname != null) {
-  output.add(`　$m：@${session.app.config.nickname[0]}`, 460);
-} else {
-  output.add(`　$m：@${session.bot.username}`, 460);
-}
-  output.add(`　$s：说话人的名字
+　$a：@说话人
+　$m：@${session.app.config.nickname?.[0] ?? session.bot.username}
+　$s：说话人的名字
 　\$()：指令插值
-　\${}：表达式插值`, 0);
+　\${}：表达式插值`, 0)
   session.app.emit('dialogue/usage', output, session)
   return output.toString()
 }
