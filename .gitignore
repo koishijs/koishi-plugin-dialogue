@@ -1,6 +1,7 @@
 lib
 dist
 temp
+cache
 coverage
 
 tsconfig.temp.json
