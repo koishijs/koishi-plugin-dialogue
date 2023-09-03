@@ -148,7 +148,7 @@ export const name = 'dialogue'
 export const using = ['database'] as const
 
 export function apply(ctx: Context, config: Config) {
-  ctx.i18n.define('zh', require('./locales/zh'))
+  ctx.i18n.define('zh-CN', require('./locales/zh-CN'))
 
   // features
   ctx.plugin(DialogueService, config)

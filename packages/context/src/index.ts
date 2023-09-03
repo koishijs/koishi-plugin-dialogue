@@ -38,7 +38,7 @@ export const using = ['dialogue'] as const
 export function apply(ctx: Context, config: Config) {
   const { authority } = config
 
-  ctx.i18n.define('zh', require('./locales/zh'))
+  ctx.i18n.define('zh-CN', require('./locales/zh-CN'))
 
   ctx.model.extend('dialogue', {
     guilds: 'list(255)',
