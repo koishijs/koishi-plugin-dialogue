@@ -1,0 +1,16 @@
+{
+  "name": "koishi-plugin-dialogue",
+  "short_name": "koishi-plugin-dialogue",
+  "description": "基于 Koishi 的对话系统",
+  "start_url": "/zh-CN/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#5546a3",
+  "icons": [
+    {
+      "src": "https://koishi.chat/logo.png",
+      "sizes": "384x384",
+      "type": "image/png"
+    }
+  ]
+}
