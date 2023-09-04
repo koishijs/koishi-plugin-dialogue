@@ -115,7 +115,7 @@ export function apply(ctx: Context, config: Config) {
       }
     }
 
-    if (options.action !== 'modify' && hasUnnamed && session.subtype === 'group') {
+    if (options.action !== 'modify' && hasUnnamed && !session.isDirect) {
       try {
         const memberMap = await session.bot.getGuildMemberMap(session.guildId)
         for (const userId in memberMap) {

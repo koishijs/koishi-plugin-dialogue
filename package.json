@@ -24,7 +24,7 @@
   "devDependencies": {
     "@koishijs/eslint-config": "^1.0.4",
     "@koishijs/plugin-database-memory": "^2.3.0",
-    "@koishijs/plugin-mock": "^2.5.0",
+    "@koishijs/plugin-mock": "^2.5.2",
     "@koishijs/vitepress": "^3.0.0",
     "@sinonjs/fake-timers": "^6.0.1",
     "@types/mocha": "^9.1.1",
@@ -48,7 +48,7 @@
     "yakumo-publish": "^0.3.3",
     "yakumo-publish-sync": "^0.3.3",
     "yakumo-tsc": "^0.3.12",
-    "yakumo-upgrade": "^0.3.2",
+    "yakumo-upgrade": "^0.3.4",
     "yakumo-version": "^0.3.2",
     "vitepress": "1.0.0-rc.4"
   }

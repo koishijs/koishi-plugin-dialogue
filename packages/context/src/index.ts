@@ -93,7 +93,7 @@ export function apply(ctx: Context, config: Config) {
         } else {
           defineProperty(options, '_guilds', options.guilds ? options.guilds.split(',').map(id => `${session.platform}:${id}`) : [])
         }
-      } else if (session.subtype !== 'group' && options['partial']) {
+      } else if (session.isDirect && options['partial']) {
         return session.text('.context.private-context')
       } else {
         defineProperty(options, '_guilds', guilds)
@@ -142,7 +142,7 @@ export function apply(ctx: Context, config: Config) {
   })
 
   ctx.on('dialogue/detail', ({ guilds, flag }, detail, session) => {
-    const includeCurrentGuild = session.subtype === 'group' && guilds.includes(session.gid)
+    const includeCurrentGuild = !session.isDirect && guilds.includes(session.gid)
     const prefix = flag & Dialogue.Flag.complement ? 'enable-' : 'disable-'
     const path = includeCurrentGuild
       ? 'except-current-' + (guilds.length - 1 ? 'and-more' : 'only')
@@ -152,7 +152,7 @@ export function apply(ctx: Context, config: Config) {
 
   ctx.on('dialogue/abstract', ({ guilds, flag }, output, session) => {
     const { options } = session.argv
-    if (!options._guilds && session.subtype === 'group') {
+    if (!options._guilds && !session.isDirect) {
       const isReversed = flag & Dialogue.Flag.complement
       const hasGroup = guilds.includes(session.gid)
       output.unshift(!isReversed === hasGroup ? isReversed ? 'E' : 'e' : isReversed ? 'd' : 'D')

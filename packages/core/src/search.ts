@@ -79,7 +79,7 @@ export default function apply(ctx: Context) {
         ...test,
         regexp: null,
         question: parsed,
-        original: original,
+        original,
       })
       Object.defineProperty(dialogue, '_redirections', { writable: true, value: dialogues })
       await ctx.parallel('dialogue/search', session, test, dialogues)
