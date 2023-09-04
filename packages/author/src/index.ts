@@ -97,14 +97,24 @@ export function apply(ctx: Context, config: Config) {
       }
     }
     if (options.action !== 'modify') fields.push('name')
-    const users = await ctx.database.get('user', { id: [...writers] }, fields)
+    const [users, bindings] = await Promise.all([
+      ctx.database.get('user', { id: [...writers] }, fields),
+      ctx.database.get('binding', {
+        platform: session.platform,
+        aid: [...writers],
+      }, ['aid', 'pid']),
+    ] as const)
+    const bindingMap: Dict<string> = {}
+    for (const binding of bindings) {
+      bindingMap[binding.aid] = binding.pid
+    }
 
     let hasUnnamed = false
     const idMap: Dict<number> = {}
     for (const user of users) {
       authMap[user.id] = user.authority
       if (options.action === 'modify') continue
-      const userId = user[session.platform]
+      const userId = bindingMap[user.id]
       if (user.name) {
         nameMap[user.id] = `${user.name} (${userId})`
       } else if (userId === session.userId) {

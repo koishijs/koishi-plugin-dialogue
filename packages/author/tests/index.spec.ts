@@ -12,7 +12,7 @@ describe('koishi-plugin-dialogue-author', () => {
 
   app.plugin(author)
 
-  app.command('test').action(({ session }) => '' + session.userId)
+  app.command('test').action(({ session }) => '' + session!.userId)
 
   it('create writer', async () => {
     // 当自身未设置 username 时使用 session.sender

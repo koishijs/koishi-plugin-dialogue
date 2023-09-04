@@ -235,7 +235,7 @@ export default function receiver(ctx: Context, config: Dialogue.Config) {
   })
 
   ctx2.middleware(async (session, next) => {
-    return triggerDialogue(ctx, session, next)
+    return await triggerDialogue(ctx, session, next)
   })
 
   ctx.on('notice/poke', async (session) => {
@@ -243,7 +243,7 @@ export default function receiver(ctx: Context, config: Dialogue.Config) {
     const { flag } = await session.observeChannel(['flag'])
     if (flag & Channel.Flag.ignore) return
     session.content = 'hook:poke'
-    triggerDialogue(ctx, session)
+    await triggerDialogue(ctx, session)
   })
 
   async function triggerNotice(name: string, session: Session) {
@@ -251,7 +251,7 @@ export default function receiver(ctx: Context, config: Dialogue.Config) {
     if (assignee !== session.selfId) return
     if (flag & Channel.Flag.ignore) return
     session.content = 'hook:' + name + (session.userId === session.selfId ? ':self' : ':others')
-    triggerDialogue(ctx, session)
+    await triggerDialogue(ctx, session)
   }
 
   ctx.on('notice/honor', async (session) => {
@@ -290,6 +290,6 @@ export default function receiver(ctx: Context, config: Dialogue.Config) {
     .action(async ({ session }, message = '') => {
       if (session._redirected > maxRedirections) return
       session.content = message
-      return triggerDialogue(ctx, session)
+      return await triggerDialogue(ctx, session)
     })
 }
