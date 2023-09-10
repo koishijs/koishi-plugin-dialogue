@@ -1,4 +1,4 @@
-import { Context, Dict, isNullable, Schema, User } from 'koishi'
+import { Context, Dict, isNullable, observe, Schema, User } from 'koishi'
 import { Dialogue } from 'koishi-plugin-dialogue'
 
 declare module 'koishi-plugin-dialogue' {
@@ -215,15 +215,10 @@ export function apply(ctx: Context, config: Config) {
   ctx.on('dialogue/before-send', async (state) => {
     const { dialogue, session } = state
     if (dialogue.flag & Dialogue.Flag.substitute && dialogue.writer && session.user.id !== dialogue.writer) {
-      const { platform } = session
-      const userFields = new Set<User.Field>(['name', 'flag', platform as never])
+      const userFields = new Set<User.Field>(['id', 'name', 'flag', 'authority', 'permissions', 'locales'])
       ctx.emit(session, 'dialogue/before-attach-user', state, userFields)
-      // do a little trick here
-      session.platform = 'id'
-      session.userId = dialogue.writer as any
-      await session.observeUser(userFields)
-      session.platform = platform
-      session.userId = session.user[platform]
+      const [data] = await ctx.database.get('user', dialogue.writer, [...userFields])
+      session.user = observe(data, diff => ctx.database.set('user', dialogue.writer, diff as any), `user ${dialogue.writer}`)
     }
   })
 

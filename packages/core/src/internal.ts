@@ -81,7 +81,7 @@ export default function apply(ctx: Context, config: Dialogue.Config) {
 
     function applySuggestion(session: Dialogue.Session) {
       // Create a new session to isolate i18n scope.
-      session = Object.create(session)
+      session = session.bot.session(session) as any
       return session.withScope('commands.teach.messages', () => {
         return session.argv.options.target ? analyze(session) : create(session)
       })
@@ -172,7 +172,7 @@ export default function apply(ctx: Context, config: Dialogue.Config) {
     try {
       args[1] = await ctx.assets.transform(args[1])
     } catch (error) {
-      ctx.logger('teach').warn(error.message)
+      ctx.logger('teach').warn(error)
       return session.text('.upload-failed')
     }
   })
