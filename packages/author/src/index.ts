@@ -118,7 +118,7 @@ export function apply(ctx: Context, config: Config) {
       if (user.name) {
         nameMap[user.id] = `${user.name} (${userId})`
       } else if (userId === session.userId) {
-        nameMap[user.id] = `${session.author.nickname || session.author.username} (${session.userId})`
+        nameMap[user.id] = `${session.author.name} (${session.userId})`
       } else {
         hasUnnamed = true
         idMap[userId] = user.id

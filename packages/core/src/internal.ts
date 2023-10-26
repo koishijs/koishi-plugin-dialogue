@@ -81,8 +81,12 @@ export default function apply(ctx: Context, config: Dialogue.Config) {
 
     function applySuggestion(session: Dialogue.Session) {
       // Create a new session to isolate i18n scope.
-      session = session.bot.session(session) as any
-      return session.withScope('commands.teach.messages', () => {
+      const sess = session.bot.session(session.event) as any
+      sess.user = session.user
+      sess.channel = session.channel
+      sess.guild = session.guild
+      sess.argv = session.argv
+      return sess.withScope('commands.teach.messages', () => {
         return session.argv.options.target ? analyze(session) : create(session)
       })
     }

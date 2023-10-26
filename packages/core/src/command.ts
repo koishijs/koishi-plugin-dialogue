@@ -68,7 +68,7 @@ const cheatSheet = (session: Dialogue.Session, config: Dialogue.Config) => {
 　$0：收到的原文本
 　$n：分条发送
 　$a：@说话人
-　$m：@${session.app.config.nickname?.[0] ?? session.bot.username}
+　$m：@${session.app.config.nickname?.[0] ?? session.bot.user.name}
 　$s：说话人的名字
 　\$()：指令插值
 　\${}：表达式插值`, 0)
@@ -89,8 +89,8 @@ export default function command(ctx: Context, config: Dialogue.Config) {
     const argv = Argv.parse(content) as Dialogue.Session['argv']
     if (session.quote || !argv.tokens.length) return
     let prefix = argv.tokens[0].content
-    if (session.parsed.prefix) {
-      prefix = session.parsed.prefix + prefix
+    if (session.stripped.prefix) {
+      prefix = session.stripped.prefix + prefix
     }
 
     // ignore non-text prefix
@@ -109,7 +109,7 @@ export default function command(ctx: Context, config: Dialogue.Config) {
 
     argv.tokens.shift()
     argv.tokens.forEach(Argv.revert)
-    argv.source = session.parsed.content
+    argv.source = session.stripped.content
     argv.options = {}
     const { length } = argv.tokens
     if (capture[1] === last) {

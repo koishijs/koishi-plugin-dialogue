@@ -229,15 +229,16 @@ export default function receiver(ctx: Context, config: Dialogue.Config) {
   const ctx2 = ctx.guild()
 
   ctx.before('attach', (session) => {
-    if (session.parsed.appel) return
+    if (session.stripped.appel) return
     const { activated } = ctx.getSessionState(session)
-    if (activated[session.userId]) session.parsed.appel = true
+    if (activated[session.userId]) session.stripped.appel = true
   })
 
   ctx2.middleware(async (session, next) => {
     return await triggerDialogue(ctx, session, next)
   })
 
+  // @ts-ignore
   ctx.on('notice/poke', async (session) => {
     if (session.targetId !== session.selfId) return
     const { flag } = await session.observeChannel(['flag'])
@@ -254,13 +255,14 @@ export default function receiver(ctx: Context, config: Dialogue.Config) {
     await triggerDialogue(ctx, session)
   }
 
+  // @ts-ignore
   ctx.on('notice/honor', async (session) => {
     await triggerNotice(session.subsubtype, session)
   })
 
   ctx.on('guild-member-added', triggerNotice.bind(null, 'join'))
 
-  ctx.on('guild-member-deleted', triggerNotice.bind(null, 'leave'))
+  ctx.on('guild-member-removed', triggerNotice.bind(null, 'leave'))
 
   ctx.on('dialogue/receive', ({ session }) => {
     // generally flag and authority has already attached to users
