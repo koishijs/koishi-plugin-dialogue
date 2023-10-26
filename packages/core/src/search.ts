@@ -34,7 +34,7 @@ declare module '.' {
 
 export default function apply(ctx: Context) {
   ctx.command('dialogue.stats').action(async ({ session }) => {
-    const stats = await ctx.dialogue.stats()
+    const stats = await ctx.root.dialogue.stats()
     return session.text('.output', stats)
   })
 
@@ -72,10 +72,10 @@ export default function apply(ctx: Context) {
       const { answer } = dialogue
       // TODO extract dialogue command
       if (!answer.startsWith('%{dialogue ')) continue
-      const { original, parsed } = ctx.dialogue.stripQuestion(answer.slice(11, -1).trimStart())
+      const { original, parsed } = ctx.root.dialogue.stripQuestion(answer.slice(11, -1).trimStart())
       if (parsed in options.questionMap) continue
       // TODO multiple tests in one query
-      const dialogues = options.questionMap[parsed] = await ctx.dialogue.get({
+      const dialogues = options.questionMap[parsed] = await ctx.root.dialogue.get({
         ...test,
         regexp: null,
         question: parsed,

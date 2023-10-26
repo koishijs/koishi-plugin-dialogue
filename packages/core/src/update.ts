@@ -143,7 +143,7 @@ export async function analyze(session: Dialogue.Session) {
       await app.serial('dialogue/after-modify', session)
     }
 
-    return sendResult(session)
+    return await sendResult(session)
   })
 }
 

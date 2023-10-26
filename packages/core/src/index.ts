@@ -145,7 +145,7 @@ export const schema: Schema<Config> = Schema.intersect([
 ])
 
 export const name = 'dialogue'
-export const using = ['database'] as const
+export const using = ['database']
 
 export function apply(ctx: Context, config: Config) {
   ctx.i18n.define('zh-CN', require('./locales/zh-CN'))

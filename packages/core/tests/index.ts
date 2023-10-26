@@ -1,9 +1,10 @@
-import { App } from 'koishi'
+import { App, Logger } from 'koishi'
 import * as dialogue from 'koishi-plugin-dialogue'
 import memory from '@koishijs/plugin-database-memory'
 import mock from '@koishijs/plugin-mock'
 
 export default function (config: dialogue.Config = {}) {
+  const logger = new Logger('dialogue')
   const app = new App({
     nickname: ['koishi', 'satori'],
   })
@@ -31,6 +32,7 @@ export default function (config: dialogue.Config = {}) {
 
   async function start() {
     if (app.events.isActive) return
+    logger.level = 3
     await app.start()
     await app.mock.initUser(u2id, 2)
     await app.mock.initUser(u3id, 3)
@@ -43,6 +45,7 @@ export default function (config: dialogue.Config = {}) {
     if (!app.events.isActive) return
     await app.database.dropAll()
     await app.stop()
+    logger.level = 2
   }
 
   before(start)

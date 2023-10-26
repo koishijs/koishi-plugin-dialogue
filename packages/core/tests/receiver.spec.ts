@@ -5,7 +5,7 @@ import createEnvironment from '.'
 import * as jest from 'jest-mock'
 
 describe('koishi-plugin-dialogue (appellative)', () => {
-  const { u3g1 } = createEnvironment({})
+  const { app, u3g1 } = createEnvironment({})
 
   let clock: InstalledClock
   const randomReal = jest.spyOn(Random, 'real')
@@ -27,8 +27,7 @@ describe('koishi-plugin-dialogue (appellative)', () => {
     await u3g1.shouldReply('koishi, f o o', 'bar')
     // should strip punctuations
     await u3g1.shouldReply('satori, foo?!', 'bar')
-    // TODO support at-trigger
-    // await u3g1.shouldReply(`<at id="${app.selfId}"/> foo`, 'bar')
+    await u3g1.shouldReply(`<at id="${app.mock.bots[0].selfId}"/> foo`, 'bar')
     await u3g1.shouldReply('#1', '问答 1 的详细信息：\n问题：koishi,foo\n回答：bar\n触发权重：p=0, P=1')
     await u3g1.shouldReply('## foo', '问题“foo”的回答如下：\n1. [p=0, P=1] bar')
   })
@@ -50,6 +49,7 @@ describe('koishi-plugin-dialogue (appellative)', () => {
     await u3g1.shouldReply('koishi, fooo', 'baz')
     await u3g1.shouldReply('#4 -p 0.5 -P 1', '问答 4 已成功修改。')
     await u3g1.shouldReply('koishi, fooo', 'baz')
+    await u3g1.shouldReply(`<at id="${app.mock.bots[0].selfId}"/> fooo`, 'baz')
   })
 
   it('unescape semgent (#309)', async () => {
@@ -64,11 +64,11 @@ describe('koishi-plugin-dialogue (interpolate)', () => {
       const { app, u3g1, start, stop } = createEnvironment({})
       app.command('bar').action(() => 'hello')
       app.command('baz').action(async ({ session }) => {
-        await session.sendQueued('hello')
+        await session!.sendQueued('hello')
       })
       app.command('report [text]').action(async ({ session }, text) => {
-        await session.sendQueued(text)
-        await session.sendQueued('end')
+        await session!.sendQueued(text)
+        await session!.sendQueued('end')
       })
 
       await start()

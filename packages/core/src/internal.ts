@@ -54,7 +54,7 @@ export default function apply(ctx: Context, config: Dialogue.Config) {
     }
     const { original, parsed, appellative } = options.regexp
       ? { original: segment.unescape(question), parsed: question, appellative: false }
-      : ctx.dialogue.stripQuestion(question)
+      : ctx.root.dialogue.stripQuestion(question)
     defineProperty(options, 'appellative', appellative)
     defineProperty(options, 'original', original)
     args[0] = parsed
@@ -87,7 +87,7 @@ export default function apply(ctx: Context, config: Dialogue.Config) {
       sess.guild = session.guild
       sess.argv = session.argv
       return sess.withScope('commands.teach.messages', () => {
-        return session.argv.options.target ? analyze(session) : create(session)
+        return session.argv.options.target ? analyze(sess) : create(sess)
       })
     }
 
@@ -172,9 +172,10 @@ export default function apply(ctx: Context, config: Dialogue.Config) {
 
   ctx.before('dialogue/modify', async (session) => {
     const { args } = session.argv
-    if (!args[1] || !ctx.assets) return
+    const assets = ctx.get('assets')
+    if (!args[1] || !assets) return
     try {
-      args[1] = await ctx.assets.transform(args[1])
+      args[1] = await assets.transform(args[1])
     } catch (error) {
       ctx.logger('teach').warn(error)
       return session.text('.upload-failed')

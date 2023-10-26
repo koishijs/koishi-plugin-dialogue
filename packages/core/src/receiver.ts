@@ -155,10 +155,10 @@ export async function triggerDialogue(ctx: Context, session: Session, next: Next
 
   if (ctx.bail('dialogue/receive', state)) return next()
   const logger = ctx.logger('dialogue')
-  logger.debug('[receive]', session.messageId, session.content)
+  logger.debug('[receive]', session.content)
 
   // fetch matched dialogues
-  const dialogues = state.dialogues = await ctx.dialogue.get(state.test)
+  const dialogues = state.dialogues = await ctx.root.dialogue.get(state.test)
 
   // pick dialogue
   let dialogue: Dialogue
@@ -271,11 +271,12 @@ export default function receiver(ctx: Context, config: Dialogue.Config) {
 
   ctx.on('dialogue/receive', ({ session, test }) => {
     if (session.content.includes('<image ')) return true
-    const { original, parsed, appellative, activated } = ctx.dialogue.stripQuestion(session.content)
+    const { appel, content } = session.stripped
+    const { original, parsed, appellative, activated } = ctx.root.dialogue.stripQuestion(content)
     test.question = parsed
     test.original = original
     test.activated = activated
-    test.appellative = appellative
+    test.appellative = appellative || appel
   })
 
   // predict the user fields involved
