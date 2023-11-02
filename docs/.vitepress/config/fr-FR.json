@@ -3,7 +3,7 @@
   "themeConfig": {
     "sidebar": [
       {
-        "text": "指南",
+        "text": "Guide",
         "items": [
           {
             "text": "基本用法",
