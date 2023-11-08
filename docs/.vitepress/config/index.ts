@@ -18,7 +18,7 @@ export default defineConfig({
   },
 
   themeConfig: {
-    indexName: 'common',
+    indexName: 'koishi-dialogue',
     logo: 'https://koishi.chat/logo.png',
 
     socialLinks: {
