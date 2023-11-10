@@ -44,7 +44,7 @@ export const Config: Schema<Config> = Schema.object({
 
 export const name = 'koishi-plugin-dialogue-author'
 
-export const using = ['dialogue'] as const
+export const inject = ['dialogue'] as const
 
 export function apply(ctx: Context, config: Config) {
   const { authority } = config

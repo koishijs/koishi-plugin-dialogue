@@ -272,6 +272,7 @@ export default function receiver(ctx: Context, config: Dialogue.Config) {
   ctx.on('dialogue/receive', ({ session, test }) => {
     if (session.content.includes('<image ')) return true
     const { appel, content } = session.stripped
+    if (!content && !appel) return true
     const { original, parsed, appellative, activated } = ctx.root.dialogue.stripQuestion(content)
     test.question = parsed
     test.original = original

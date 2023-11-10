@@ -34,7 +34,7 @@ export const Config: Schema<Config> = Schema.object({})
 
 export const name = 'koishi-plugin-dialogue-time'
 
-export const using = ['database'] as const
+export const inject = ['database'] as const
 
 export function apply(ctx: Context, config: Config) {
   ctx.i18n.define('zh-CN', require('./locales/zh-CN'))

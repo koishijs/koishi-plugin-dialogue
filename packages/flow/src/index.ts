@@ -39,7 +39,7 @@ declare module 'koishi-plugin-dialogue' {
 
 export const name = 'koishi-plugin-dialogue-flow'
 
-export const using = ['dialogue'] as const
+export const inject = ['dialogue'] as const
 
 export function apply(ctx: Context, config: Dialogue.Config) {
   ctx.i18n.define('zh-CN', require('./locales/zh-CN'))
