@@ -52,7 +52,7 @@ export function apply(ctx: Context, config: Config) {
   ctx.i18n.define('zh-CN', require('./locales/zh-CN'))
 
   ctx.model.extend('dialogue', {
-    writer: 'unsigned(20)',
+    writer: 'unsigned(8)',
   })
 
   /* eslint-disable no-irregular-whitespace */
