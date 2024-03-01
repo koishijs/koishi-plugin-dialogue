@@ -1,0 +1,95 @@
+commands:
+  teach:
+    description: 添加教学对话
+    options:
+      #search
+      search: 搜索已有问答
+      page: 设置搜索结果的页码
+      autoMerge: 自动合并相同的问题和回答
+      recursive: 禁用递归查询
+      pipe: 对每个搜索结果执行操作
+      #update
+      review: 查看最近的修改
+      revert: 回退最近的修改
+      includeLast: 包含最近的修改数量
+      excludeLast: 排除最近的修改数量
+      target: 查看或修改已有问题
+      remove: 彻底删除问答
+      #internal
+      ignoreHint: 忽略智能提示
+      regexp.true: 使用正则表达式匹配
+      regexp.false: 取消使用正则表达式匹配
+      redirect: 重定向到其他问答
+      #probability
+      probabilityStrict: 设置问题的触发权重
+      probabilityAppellative: 设置被称呼时问题的触发权重
+    messages:
+      options-conflict: 选项 {0} 不能同时使用。
+      too-many-arguments: 存在多余的参数，请检查指令语法或将含有空格或换行的问答置于一对引号内。
+      missing-question-or-answer: 缺少问题或回答，请检查指令语法。
+      prohibited-command: 禁止在教学回答中插值调用 {0} 指令。
+      prohibited-cq-code: 问题必须是纯文本。
+      illegal-regexp: 问题含有错误的或不支持的正则表达式语法。
+      probably-modify-answer: 推测你想修改的是回答而不是问题。发送句号以修改回答，使用 -I 选项以忽略本提示。
+      probably-regexp: 推测你想{0}的问题是正则表达式。发送句号以添加 -x 选项，使用 -I 选项以忽略本提示。
+      upload-failed: 上传资源时发生错误。
+      redirections: 重定向到：
+      create-success: 问答已添加，编号为 {0}。
+      modify-success: 问答 {0} 已成功修改。
+      remove-success: 问答 {0} 已成功删除。
+      revert-success: 问答 {0} 已回退完成。
+      unchanged: 问答 {0} 没有发生改动。
+      create-modified: 修改了已存在的问答，编号为 {0}。
+      create-unchanged: 问答已存在，编号为 {0}，如要修改请尝试使用 {1} 指令。
+      revert-unknown: 最近无人修改过编号为 {0} 的问答。
+      modify-unknown: 没有搜索到编号为 {0} 的问答。
+      permission-denied: 问答 {0} 因权限过低无法{1}。
+      low-permission: 该问答因权限过低无法添加。
+      unknown-error: '{0}问答时遇到错误。'
+      no-history: 没有搜索到满足条件的教学操作。
+      recent-history: 近期执行的教学操作有：
+      max-previews: 一次最多同时预览 {0} 个问答。
+      review: '{0}于：<i18n:time value={1}/>前'
+      detail-header: 问答 {0} 的{1}：
+      detail: '{0}：{1}'
+      entity:
+        question: 问题
+        answer: 回答
+        regexp: 正则
+        detail: 详细信息
+        history: 历史版本
+      operation:
+        create: 添加
+        modify: 修改
+        remove: 删除
+        revert: 回退
+      search:
+        count: 共 {0} 个
+        empty: 没有搜索到任何问答。
+        regexp: 正则
+        regexp-hint: '，请尝试使用正则表达式匹配'
+        probability: 实际触发概率：
+        result-all: 全部问答如下{2}：
+        result-answer: 回答“{1}”的问题如下{2}：
+        result-question: 问题“{0}”的回答如下{2}：
+        result-dialogue: '“{0}”“{1}”匹配的回答如下{2}：'
+        result-regexp-answer: 回答正则表达式“{1}”的搜索结果如下{2}：
+        result-regexp-question: 问题正则表达式“{0}”的搜索结果如下{2}：
+        result-regexp-dialogue: 问答正则表达式“{0}”“{1}”的搜索结果如下{2}：
+        empty-all: 没有搜索到任何回答，尝试切换到其他环境。
+        empty-answer: 没有搜索到回答“{1}”{2}。
+        empty-question: 没有搜索到问题“{0}”{2}。
+        empty-dialogue: 没有搜索到问答“{0}”“{1}”{2}。
+        empty-regexp-answer: 没有搜索到含有正则表达式“{1}”的回答。
+        empty-regexp-question: 没有搜索到含有正则表达式“{0}”的问题。
+        empty-regexp-dialogue: 没有搜索到含有正则表达式“{0}”“{1}”的问答。
+        page-hint: ' (第 {0}/{1} 页)'
+        page-footer: 可以使用 /+页码 以调整输出的条目页数。
+      probability:
+        detail: 触发权重：p={probS}, P={probA}
+        zero-to-one: 应为不超过 1 的正数。
+  dialogue:
+    description: 触发教学对话
+    stats:
+      messages:
+        output: 共收录了 {questions} 个问题和 {dialogues} 个回答。
