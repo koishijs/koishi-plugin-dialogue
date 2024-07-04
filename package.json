@@ -40,7 +40,7 @@
     "sass": "^1.69.5",
     "shx": "^0.3.4",
     "typescript": "^5.2.2",
-    "yml-register": "^1.1.0",
+    "vitepress": "1.0.0-rc.24",
     "yakumo": "^0.3.13",
     "yakumo-esbuild": "^0.3.26",
     "yakumo-esbuild-yaml": "^0.3.1",
@@ -50,6 +50,6 @@
     "yakumo-tsc": "^0.3.12",
     "yakumo-upgrade": "^0.3.4",
     "yakumo-version": "^0.3.2",
-    "vitepress": "1.0.0-rc.24"
+    "yml-register": "^1.1.0"
   }
 }
