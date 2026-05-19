@@ -56,6 +56,15 @@ describe('koishi-plugin-dialogue (appellative)', () => {
     await u3g1.shouldReply('# ^有人说[:：](.+) 谁说过$1？ -x', '问答已添加，编号为 5。')
     await u3g1.shouldReply('有人说：要有光', '谁说过要有光？')
   })
+
+  it('bare appel without content should not match anything (#39)', async () => {
+    // Previously a bare @bot would fall through to the dialogue/query hook
+    // with empty question/original, causing it to fetch every row and
+    // randomly pick one weighted by probA.
+    const selfId = app.mock.bots[0].selfId
+    await u3g1.shouldNotReply(`<at id="${selfId}"/>`)
+    await u3g1.shouldNotReply(`<at id="${selfId}"/> `)
+  })
 })
 
 describe('koishi-plugin-dialogue (interpolate)', () => {
