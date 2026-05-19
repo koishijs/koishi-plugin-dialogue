@@ -272,7 +272,13 @@ export default function receiver(ctx: Context, config: Dialogue.Config) {
   ctx.on('dialogue/receive', ({ session, test }) => {
     if (session.content.includes('<image ')) return true
     const { appel, content } = session.stripped
-    if (!content && !appel) return true
+    // Without any text content (e.g. a bare @bot), `stripQuestion` produces
+    // empty `question` / `original`. The built-in `dialogue/query` hook then
+    // attaches no question constraint and the database returns every row,
+    // which gets weight-sampled by probA — so a pure @bot would randomly fire
+    // any `probA > 0` entry regardless of its question. Skip dialogue
+    // resolution entirely when there is no content to match against.
+    if (!content) return true
     const { original, parsed, appellative, activated } = ctx.root.dialogue.stripQuestion(content)
     test.question = parsed
     test.original = original
