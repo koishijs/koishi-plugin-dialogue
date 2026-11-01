@@ -99,7 +99,7 @@ export async function analyze(session: Dialogue.Session) {
   const actualIds = options.dialogues.map(d => d.id)
   options.unknown = difference(target, actualIds)
   await app.serial('dialogue/before-detail', session)
-  
+
   if (options.unknown.length && !dialogues.length && action !== 'review' && action !== 'revert') {
     return session.text('.modify-unknown', [options.unknown.join(', ')])
   }
