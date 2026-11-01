@@ -133,12 +133,13 @@ export function apply(ctx: Context, config: Dialogue.Config) {
     // modify successors
     const { succOverwrite, successors, dialogues } = session.argv.options
     if (!successors) return
+    if (succOverwrite && !dialogues.length) return
     const predecessors = dialogues.map(dialogue => '' + dialogue.id)
     const successorDialogues = await ctx.dialogue.get(successors)
     const newTargets = successorDialogues.map(d => d.id)
     session.argv.options.unknown = difference(successors, newTargets)
 
-    if (succOverwrite) {
+    if (succOverwrite && predecessors.length) {
       for (const dialogue of await ctx.dialogue.get({ predecessors })) {
         if (!newTargets.includes(dialogue.id)) {
           newTargets.push(dialogue.id)

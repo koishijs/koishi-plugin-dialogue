@@ -100,6 +100,10 @@ export async function analyze(session: Dialogue.Session) {
   options.unknown = difference(target, actualIds)
   await app.serial('dialogue/before-detail', session)
 
+  if (options.unknown.length && !dialogues.length && action !== 'review' && action !== 'revert') {
+    return session.text('.modify-unknown', [options.unknown.join(', ')])
+  }
+
   if (!options.action) {
     if (options.unknown.length) {
       await session.send(session.text(`.${options.action === 'review' ? 'revert' : 'modify'}-unknown`, [options.unknown.join(', ')]))
